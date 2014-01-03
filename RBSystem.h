@@ -38,9 +38,6 @@ class RBSystem{
         StateVector Ydot;
 
         Environment Env;
-        Strut Spring;
-
-        int springmeta[2];
 
     public:
         RBSystem(int nbods = 1);
@@ -48,7 +45,6 @@ class RBSystem{
 
         void setParams(double m[], double width[], double height[], double depth[], int type[], double d1[], double d2[], double d3[], Vector4d c[]);
         void setEnv(Vector3d g, Vector3d w, double v);
-        void setSpring(double k, double d, Vector3d p0, double l0, int rbinum, int ivert);
         void initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vector3d omega0[]);
         /* kind of messed up with the ones below:
         void stateToArr(int indx);

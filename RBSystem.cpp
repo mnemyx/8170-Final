@@ -48,12 +48,6 @@ void RBSystem::setEnv(Vector3d g, Vector3d w, double v) {
     Env.Vis = v;
 }
 
-void RBSystem::setSpring(double k, double d, Vector3d p0, double l0, int rbinum, int ivert) {
-    Spring.SetStrut(k, d, l0, p0);
-    springmeta[0] = rbinum;
-    springmeta[1] = ivert;
-}
-
 void RBSystem::initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vector3d omega0[]) {
     for(int i = 0; i < nbodies; i++) {
         rblist[i].initICs(x0[i], q[i], v0[i], omega0[i]);
@@ -168,7 +162,7 @@ void StatetoX(const Vector3d x, const Quaternion q, const Vector3d p, const Vect
     X[12] = l.z;
 }
 
-StateVector dynamics(const StateVector &X, double t, double dt, int nbodies, const RBody &rb, const Strut &sp, int spi, const Environment &Env) {
+StateVector dynamics(const StateVector &X, double t, double dt, int nbodies, const RBody &rb, const Environment &Env) {
     Vector3d x, p, l;
     Quaternion q;
     StateVector newXdot(nbodies * STATE_SIZE);
@@ -212,43 +206,43 @@ StateVector dynamics(const StateVector &X, double t, double dt, int nbodies, con
     else
         fg = (Env.G + Env.Vis * (Env.W - V)) * rb.getM();
 
-
-    Vector3d p1 = rb.getvertex(spi);
+    //Vector3d p1 = rb.getvertex(spi);
 
     //fs = - (sp.GetK() / rb.getM()) * ((p1 - sp.GetP0()).norm() - sp.GetL0()) * (p1 - sp.GetP0()).normalize();
     //fd = - (sp.GetD() / rb.getM()) * ((V * (p1 - sp.GetP0()).normalize()) * (p1 - sp.GetP0()).normalize());
     //cout << "fs: " << fs << endl;
 
-    fs = -sp.GetK() * ((p1 - sp.GetP0()).norm() - sp.GetL0()) * (p1 - sp.GetP0()).normalize();
+    //fs = -sp.GetK() * ((p1 - sp.GetP0()).norm() - sp.GetL0()) * (p1 - sp.GetP0()).normalize();
 
-    fd = -sp.GetD() * ((V * (p1 - sp.GetP0()).normalize()) * (p1 - sp.GetP0()).normalize());
+    //fd = -sp.GetD() * ((V * (p1 - sp.GetP0()).normalize()) * (p1 - sp.GetP0()).normalize());
 
-    F = fg + fs + fd;
+    F = fg;// + fs + fd;
 
 
     // calc torque
     //    ts = (p1 - x).norm() % (fs);
     //    td = (p1 - x).norm() % (fd);
 
-    ts = (p1 - x) % fs;
+    //ts = (p1 - x) % fs;
 
-    td = (p1 - x) % fd;
+    //td = (p1 - x) % fd;
 
-    T = ts + td;
+    //T = ts + td;
+    T.set(0, 0, 0);
 
     StatetoX(V, Q, F, T, newXdot);
 
     return newXdot;
 }
 
-StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double dt, int nbodies, const RBody &rb, const Strut &sp, int spi, const Environment &env) {
+StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double dt, int nbodies, const RBody &rb, const Environment &env) {
     StateVector K1(nbodies * STATE_SIZE), K2(nbodies * STATE_SIZE);
     StateVector K3(nbodies * STATE_SIZE), K4(nbodies * STATE_SIZE);
 
     K1 = dt * Xdot;
-    K2 = dt * dynamics(X + 0.5 * K1, t + 0.5 * dt, dt, nbodies, rb, sp, spi, env);
-    K3 = dt * dynamics(X + 0.5 * K2, t + 0.5 * dt, dt,  nbodies, rb, sp, spi, env);
-    K4 = dt * dynamics(X + K3, t + dt, dt, nbodies, rb, sp, spi, env);
+    K2 = dt * dynamics(X + 0.5 * K1, t + 0.5 * dt, dt, nbodies, rb, env);
+    K3 = dt * dynamics(X + 0.5 * K2, t + 0.5 * dt, dt,  nbodies, rb, env);
+    K4 = dt * dynamics(X + K3, t + dt, dt, nbodies, rb, env);
 
     return X + (K1 + 2 * K2 + 2 * K3 + K4) / 6.0;
 }
@@ -260,19 +254,21 @@ void RBSystem::takeTimestep(double t, double dt) {
 
     // compute the rate of change of state
     for(int i = 0; i < nbodies; i ++) {
-        StatetoX(rblist[i].getX(), rblist[i].getQ(),
-                 rblist[i].getP(), rblist[i].getL(), Y);
-        //cout << "Y: \n" << endl;
-        //Y.print();
-        Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Spring, springmeta[1], Env);
+        if (rblist[i].getType() != 1) {
+            StatetoX(rblist[i].getX(), rblist[i].getQ(),
+                     rblist[i].getP(), rblist[i].getL(), Y);
+            //cout << "Y: \n" << endl;
+            //Y.print();
+            Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Env);
 
-        //cout << "Ydot: \n" << endl;
-        //Ydot.print();
+            //cout << "Ydot: \n" << endl;
+            //Ydot.print();
 
-        Xnew = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Spring, springmeta[1], Env);
-        XtoState(x, q, p, l, Xnew);
+            Xnew = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
+            XtoState(x, q, p, l, Xnew);
 
-        rblist[i].setICs(x, q, p, l);
+            rblist[i].setICs(x, q, p, l);
+        }
     }
 
     printsys();
@@ -282,20 +278,10 @@ void RBSystem::drawSys(){
     // draw strut/spring
     for(int i = 0; i < nbodies; i++)
         rblist[i].drawbody();
-
-    cout << "Spring.GetP0(): " << Spring.GetP0() << endl;
-    cout << "rblist[springmeta[0]].getvertex(springmeta[1]): " << rblist[springmeta[0]].getvertex(springmeta[1]) << endl;
-    glEnable(GL_LINE_SMOOTH);
-    glBegin(GL_LINES);
-        glLineWidth(1);
-        glColor3f(1,1,1);
-        glVertex3f(Spring.GetP0().x, Spring.GetP0().y, Spring.GetP0().z);
-        glVertex3f(rblist[springmeta[0]].getvertex(springmeta[1]).x, rblist[springmeta[0]].getvertex(springmeta[1]).y, rblist[springmeta[0]].getvertex(springmeta[1]).z);
-    glEnd();
-    glDisable(GL_LINE_SMOOTH);
 }
 
 void RBSystem::printsys() {
+    cout << endl << "-----------------------------------------" << endl;
     cout << "# OF RIGID BODIES: " << nbodies << endl << "     ";
     for (int i = 0; i < nbodies; i++)
         rblist[i].print();
@@ -303,8 +289,6 @@ void RBSystem::printsys() {
         Y.print();
     cout << endl << "Ydot: " << endl << "     ";
         Ydot.print();
-    cout << endl << "Spring (attached to RBI: " << springmeta[0] << ", vertex index: " << springmeta[1] << "): " << endl << "     ";
-        Spring.PrintStrut();
     cout << endl << "Environment: " << endl << "     ";
         cout << "G: " << Env.G << endl << "     ";
         cout << "W: " << Env.W << endl << "     ";

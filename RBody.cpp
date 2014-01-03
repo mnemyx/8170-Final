@@ -35,6 +35,7 @@ RBody::RBody(double m, double width, double height, double depth, int type, doub
   Vector3d zero;
 
   rbi = 0;      // this rigid body's index is currently not set
+  rbtype = type;
 
   shape = NULL;
   setParams(m, type, width, height, depth, d1, d2, d3);
@@ -45,6 +46,8 @@ RBody::RBody(double m, double width, double height, double depth, int type, doub
 
 void RBody::setParams(double m, double width, double height, double depth, int type, double d1, double d2, double d3){
   delete shape;
+
+  rbtype = type;
 
   shape = new Model;
   if (type == PLANE) {
@@ -65,7 +68,7 @@ void RBody::setParams(double m, double width, double height, double depth, int t
     p3.set(-width/2, height/2, depth/2);
     p3 = p3 + c;
 
-    shape->BuildPlane(p0, p1, p2, p3, c);
+    shape->BuildPlane(p3, p2, p1, p0, c);
   } else
     shape->BuildCuboid(width, height, depth, d1, d2, d3);
 //cout << "m: " << m << endl;
@@ -141,7 +144,7 @@ void RBody::drawbody() {
 }
 
 void RBody::print() {
-  cout << "RIGIDBODY #" << rbi << '\n';
+  cout << endl << "********** RIGIDBODY #" << rbi << "; RBTYPE: " << rbtype << " **********" << endl;
   cout << "M: " << M << ", Minv " << Minv << '\n';
   cout << "I: \n"; I.print();
   cout << "Iinv: \n"; Iinv.print();

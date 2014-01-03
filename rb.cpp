@@ -97,31 +97,26 @@ void loadParams(char *file) {
 
     while(indata >> check) {
         if(strcmp(check, "environment") == 0) {
-        cout << " LOADING ENVIRONMENT DATA " << endl;
+            cout << " LOADING ENVIRONMENT DATA " << endl;
             for(int i=0; i<7; i++)
                 indata >> vars[i];
 
             RBSys->setEnv(Vector(vars[0], vars[1], vars[2]), Vector(vars[3], vars[4], vars[5]), vars[6]);
-
-        } else if (strcmp(check, "spring") == 0) {
-        cout << " LOADING SPRING DATA " << endl;
-            for(int i = 0; i < 8; i++){
-                indata >> vars[i];
-                cout << "vars[" << i << "]: " <<  vars[i] << endl;
-                }
-            RBSys->setSpring(vars[0], vars[1], Vector(vars[2], vars[3], vars[4]), vars[5], vars[6], vars[7]);
-
         } else if (strcmp(check, "rbodies") == 0) {
-        cout << "LOADING RBODY DATA " << endl;
+
+            cout << "LOADING RBODY DATA " << endl;
             indata >> numof;
+
             double m[numof], w[numof], h[numof], d[numof], d1[numof], d2[numof], d3[numof];
             int type[numof];
             Quaternion q[numof];
             Vector3d x0[numof], v0[numof], o0[numof];
             Vector4d c[numof];
 
+            RBSys = new RBSystem(numof);
+
             for(int k = 0; k < numof; k++) {
-                for(int i = 0; i < 25; i++) {
+                for(int i = 0; i < 22; i++) {
                     indata >> vars[i];
 
                 //cout << "vars[" << i << "]: " <<  vars[i] << endl;
@@ -134,18 +129,15 @@ void loadParams(char *file) {
                 d1[k] = vars[5];
                 d2[k] = vars[6];
                 d3[k] = vars[7];
-                x0[k].set(vars[8], vars[9], vars[10]);
-                q[k].set(vars[11], vars[12], vars[13], vars[14]);
-                v0[k].set(vars[15], vars[16], vars[17]);
-                o0[k].set(vars[18], vars[19], vars[20]);
-                c[k].set(vars[21], vars[22], vars[23], vars[24]);
+                x0[k].set(vars[5], vars[6], vars[7]);
+                q[k].set(vars[8], vars[9]   , vars[10], vars[11]);
+                v0[k].set(vars[12], vars[13], vars[14]);
+                o0[k].set(vars[15], vars[16], vars[17]);
+                c[k].set(vars[18], vars[19], vars[20], vars[21]);
             }
 
-            RBSys = new RBSystem(numof);
-            //cout << " HIHIHIHIH " << endl;
             RBSys->setParams(m, w, h, d, type, d1, d2, d3, c);
             RBSys->initializeState(x0, q, v0, o0);
-
         }
     }
 

@@ -24,6 +24,7 @@ enum {CUBE, PLANE};
 class RBody {
 	private:
         int rbi;            // rigid body index
+        int rbtype;         // rigid body type: 0 cube, 1 plane
 
         /** constant quantities **/
         double M, Minv;           // mass
@@ -70,6 +71,7 @@ class RBody {
 		const Vector3d getL() const { return L; }
 		const Quaternion getQ() const { return Q; }
 		const Vector3d getX() const { return X; }
+        int getType() { return rbtype; }
 
 		Vector3d getv() { return v; }
 		Vector3d getw() { return omega; }
