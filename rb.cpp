@@ -141,7 +141,7 @@ void loadParams(char *file) {
         }
     }
 
-    RBSys->printsys();
+    //RBSys->printsys();
 
     indata.close();
 }

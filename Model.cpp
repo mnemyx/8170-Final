@@ -26,6 +26,13 @@ void Model::Clean(){
   nvertices = ntriangles = 0;
 }
 
+//
+// Constructor, make sure model is empty
+//
+Model::Model(){
+  Clean();
+}
+
 void Model::CopyToOVert() {
     for(int i = 0; i < nvertices; i++)
         overtices[i].set(vertices[i]);
@@ -34,6 +41,29 @@ void Model::CopyToOVert() {
 void Model::CopyToONorm() {
     for(int i = 0; i < ntriangles; i++)
         onormals[i].set(normals[i]);
+}
+
+void Model::ComputeAABB() {
+    left = right = vertices[0].x;
+    bottom = top = vertices[0].y;
+    zback = zfront = vertices[0].z;
+
+    for(int i = 1; i < nvertices; i++){
+        if(vertices[i].x < left)
+            left = vertices[i].x;
+        else if(vertices[i].x > right)
+            right = vertices[i].x;
+
+        if(vertices[i].y < bottom)
+            bottom = vertices[i].y;
+        else if(vertices[i].y > top)
+            top = vertices[i].y;
+
+        if(vertices[i].z < zback)
+            zback = vertices[i].z;
+        else if(vertices[i].z > zfront)
+            zfront = vertices[i].z;
+    }
 }
 
 //
@@ -91,12 +121,6 @@ int Model::AddTriangle(int v0, int v1, int v2){
   return ntriangles++;
 }
 
-//
-// Constructor, make sure model is empty
-//
-Model::Model(){
-  Clean();
-}
 
 //
 // Make a cuboid model
@@ -414,10 +438,10 @@ void Model::Draw(int wireframe){
   for(itri = 0; itri < ntriangles; itri++){
     glBegin(op);
       if(!wireframe)
-	glNormal3f(normals[itri].x, normals[itri].y, normals[itri].z);
+        glNormal3f(normals[itri].x, normals[itri].y, normals[itri].z);
       for(int i = 0; i < 3; i++){
-	ivertex = triangles[itri][i];
-	glVertex3f(vertices[ivertex].x, vertices[ivertex].y, vertices[ivertex].z);
+        ivertex = triangles[itri][i];
+        glVertex3f(vertices[ivertex].x, vertices[ivertex].y, vertices[ivertex].z);
       }
     glEnd();
   }
@@ -504,6 +528,12 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
 
     for (int i = 0; i < ntriangles; i++)
         normals[i] = (R * onormals[i]).normalize();
+
+    //print();
+    ComputeAABB();
+    //cout << endl << "left: " << left << "; right: " << right;
+    //cout << endl << "bottom: " << bottom << "; top: " << top;
+    //cout << endl << "zback: " << zback << "; zfront: " << zfront;
 }
 
 void Model::print() {

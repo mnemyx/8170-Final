@@ -37,7 +37,7 @@ RBody::RBody(double m, double width, double height, double depth, int type, doub
   rbi = 0;      // this rigid body's index is currently not set
   rbtype = type;
 
-  shape = NULL;
+  shape = new Model;
   setParams(m, type, width, height, depth, d1, d2, d3);
 
   zero.set(0, 0, 0);
@@ -45,11 +45,11 @@ RBody::RBody(double m, double width, double height, double depth, int type, doub
 }
 
 void RBody::setParams(double m, double width, double height, double depth, int type, double d1, double d2, double d3){
-  delete shape;
+  //delete shape;
 
   rbtype = type;
 
-  shape = new Model;
+  //shape = new Model;
   if (type == PLANE) {
     Vector3d p0, p1, p2, p3;
     Vector3d c;

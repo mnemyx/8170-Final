@@ -197,21 +197,21 @@ void RBSystem::takeTimestep(double t, double dt) {
             //Y.print();
             Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Env);
 
-            cout << "Ydot AFTER FIRST DYNAMICS() line 282: " << endl;
-            Ydot.print();
+            //cout << "Ydot AFTER FIRST DYNAMICS() line 282: " << endl;
+            //Ydot.print();
 
             Xnew = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
 
-            cout << "Xnew AFTER RK4() line 287: " << endl;
-            Xnew.print();
-            cout << endl;
+            //cout << "Xnew AFTER RK4() line 287: " << endl;
+            //Xnew.print();
+            //cout << endl;
 
             XtoState(x, q, p, l, Xnew, i);
 
             rblist[i].setICs(x, q, p, l);
-            cout << endl << endl << "rblist[" << i << "].print(): " << endl;
-            rblist[i].print();
-            cout << endl;
+            //cout << endl << endl << "rblist[" << i << "].print(): " << endl;
+            //rblist[i].print();
+            //cout << endl;
         }
     }
 

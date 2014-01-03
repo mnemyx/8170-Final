@@ -13,6 +13,7 @@
 
 #include "Vector.h"
 #include "Matrix.h"
+#include "Plane.h"
 
 #define MAXVERTICES   3600		  // shapes limited to 1000 vertices
 #define MAXTRIANGLES  (MAXVERTICES / 3)
@@ -43,6 +44,8 @@ protected:
 
   Vector3d Center;          // center of mass...
 
+  double left, right, bottom, top, zback, zfront;
+
   void Clean();			    // bookkeeping, remove all vertices and triangles
 
   int AddVertex(const Vector3d &v); // insert a simple vertex into vertex table
@@ -50,6 +53,8 @@ protected:
 
   void CopyToOVert();
   void CopyToONorm();
+
+  void ComputeAABB();
 
 public:
   // Constructor, make sure model is empty

@@ -3,7 +3,7 @@ C	= cpp
 H	= h
 
 CFLAGS = -g
-LFLAGS = -g 
+LFLAGS = -g
 
 ifeq ("$(shell uname)", "Darwin")
   LDFLAGS     = -framework Foundation -framework GLUT -framework OpenGL -lm
@@ -13,8 +13,8 @@ else
   endif
 endif
 
-HFILES = StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
-OFILES = StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
+HFILES = Plane.${H} StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
+OFILES = Plane.o StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
 PROJECT = rb
 
 ${PROJECT}:	${PROJECT}.o ${OFILES}
@@ -22,6 +22,9 @@ ${PROJECT}:	${PROJECT}.o ${OFILES}
 
 ${PROJECT}.o: ${PROJECT}.${C} ${HFILES}
 	${CC} ${CFLAGS} -c -Wall ${PROJECT}.${C}
+
+Plane.o: Plane.${C} Plane.${H}
+	${CC} ${CFLAGS} -c Plane.${C}
 
 StateVector.o: StateVector.${C} StateVector.${H}
 	${CC} ${CFLAGS} -c StateVector.${C}
