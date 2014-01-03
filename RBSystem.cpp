@@ -55,114 +55,34 @@ void RBSystem::initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vec
     }
 }
 
+void XtoState(Vector3d &x, Quaternion &q, Vector3d &p, Vector3d &l, const StateVector X, const int rbi) {
+    int i = rbi * 13;
 
-/*
-void RBSystem::stateToArr(int indx) {
-    int i = indx * STATE_SIZE;
-
-    Y[i++] = rblist[indx].getX().x;
-    Y[i++] = rblist[indx].getX().y;
-    Y[i++] = rblist[indx].getX().z;
-
-    Y[i++] = rblist[indx].getQ().w;
-    Y[i++] = rblist[indx].getQ().x;
-    Y[i++] = rblist[indx].getQ().y;
-    Y[i++] = rblist[indx].getQ().z;
-
-    Y[i++] = rblist[indx].getP().x;
-    Y[i++] = rblist[indx].getP().y;
-    Y[i++] = rblist[indx].getP().z;
-
-    Y[i++] = rblist[indx].getL().x;
-    Y[i++] = rblist[indx].getL().y;
-    Y[i++] = rblist[indx].getL().z;
+    x.set(X[i++],X[i++],X[i++]);
+    q.set(X[i++],X[i++],X[i++],X[i++]);
+    p.set(X[i++],X[i++],X[i++]);
+    l.set(X[i++],X[i++], X[i++]);
 }
 
+void StatetoX(const Vector3d x, const Quaternion q, const Vector3d p, const Vector3d l, StateVector &X, const int rbi) {
+    int i = rbi * 13;
 
-void RBSystem::arrToState(int indx) {
-    int i = indx * STATE_SIZE;
-    Vector3d x, p, l;
-    Quaternion q;
-
-    x.set(Y[i++], Y[i++], Y[i++]);
-    q.set(Y[i++], Y[i++], Y[i++], Y[i++]);
-    p.set(Y[i++], Y[i++], Y[i++]);
-    l.set(Y[i++], Y[i++], Y[i++]);
-
-    rblist[indx].setICs(x, q, p, l);
+    X[i++] = x.x;
+    X[i++] = x.y;
+    X[i++] = x.z;
+    X[i++] = q.q.w;
+    X[i++] = q.q.x;
+    X[i++] = q.q.y;
+    X[i++] = q.q.z;
+    X[i++] = p.x;
+    X[i++] = p.y;
+    X[i++] = p.z;
+    X[i++] = l.x;
+    X[i++] = l.y;
+    X[i++] = l.z;
 }
 
-void RBSystem::arrToBodies() {
-    for(int i = 0; i < nbodies; i++)
-        arrToState(i);
-}
-
-void RBSystem::bodiesToArr() {
-    for(int i = 0; i < nbodies; i++)
-        stateToArr(i);
-}
-
-void RBSystem::computeFT(double t, double, dt, int rindx) {
-    Vector3d F;
-}
-
-void RBSystem::ddtStateToArr(int indx) {
-    int i = indx * STATE_SIZE;
-
-    Ydot[i++] = rblist[indx].getv().x;
-    Ydot[i++] = rblist[indx].getv().y;
-    Ydot[i++] = rblist[indx].getv().z;
-
-    Quaternion w.set(0, rblist[indx].getw());
-    Quaternion qdot = .5 * w * rblist[indx].getQ();
-
-    Ydot[i++] = qdot.w;
-    Ydot[i++] = qdot.x;
-    Ydot[i++] = qdot.y;
-    Ydot[i++] = qdot.z;
-
-    Ydot[i++] = rblist[indx].getf().x;
-    Ydot[i++] = rblist[indx].getf().y;
-    Ydot[i++] = rblist[indx].getf().z;
-
-    Ydot[i++] = rblist[indx].gett().x;
-    Ydot[i++] = rblist[indx].gett().y;
-    Ydot[i++] = rblist[indx].gett().z;
-}
-
-void RBSystem::dydt(double t, double dt, const Vector &X, const Vector &Xdot) {
-    arrToBodies();
-
-    for (int i = 0; i < nbodies; i++) {
-        computeFT(t, dt, i);
-        ddtStateToArr(i)
-    }
-}*/
-
-void XtoState(Vector3d &x, Quaternion &q, Vector3d &p, Vector3d &l, const StateVector X) {
-    x.set(X[0],X[1],X[2]);
-    q.set(X[3],X[4],X[5],X[6]);
-    p.set(X[7],X[8],X[9]);
-    l.set(X[10],X[11], X[12]);
-}
-
-void StatetoX(const Vector3d x, const Quaternion q, const Vector3d p, const Vector3d l, StateVector &X) {
-    X[0] = x.x;
-    X[1] = x.y;
-    X[2] = x.z;
-    X[3] = q.q.w;
-    X[4] = q.q.x;
-    X[5] = q.q.y;
-    X[6] = q.q.z;
-    X[7] = p.x;
-    X[8] = p.y;
-    X[9] = p.z;
-    X[10] = l.x;
-    X[11] = l.y;
-    X[12] = l.z;
-}
-
-StateVector dynamics(const StateVector &X, double t, double dt, int nbodies, const RBody &rb, const Environment &Env) {
+StateVector dynamics(const StateVector &X, double t, double dt, const int nbodies, const RBody &rb, const Environment &Env) {
     Vector3d x, p, l;
     Quaternion q;
     StateVector newXdot(nbodies * STATE_SIZE);
@@ -173,7 +93,11 @@ StateVector dynamics(const StateVector &X, double t, double dt, int nbodies, con
     Matrix3x3 r, iinv;
     Quaternion wq, qdot;
 
-    XtoState(x, q, p, l, X);
+    //cout << "X prior to XtoState() in dynamics() line 180: " << endl;
+    //X.print();
+    //cout << endl;
+
+    XtoState(x, q, p, l, X, rb.getrbi());
 
     //cout << "x: " << x << endl;
     //cout << "q: " << q << endl;
@@ -218,7 +142,6 @@ StateVector dynamics(const StateVector &X, double t, double dt, int nbodies, con
 
     F = fg;// + fs + fd;
 
-
     // calc torque
     //    ts = (p1 - x).norm() % (fs);
     //    td = (p1 - x).norm() % (fd);
@@ -230,12 +153,17 @@ StateVector dynamics(const StateVector &X, double t, double dt, int nbodies, con
     //T = ts + td;
     T.set(0, 0, 0);
 
-    StatetoX(V, Q, F, T, newXdot);
+    StatetoX(V, Q, F, T, newXdot, rb.getrbi());
 
     return newXdot;
 }
 
-StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double dt, int nbodies, const RBody &rb, const Environment &env) {
+StateVector Euler(const StateVector &X, const StateVector &Xdot, double dt){
+
+  return X + dt * Xdot;
+}
+
+StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double dt, const int nbodies, const RBody &rb, const Environment &env) {
     StateVector K1(nbodies * STATE_SIZE), K2(nbodies * STATE_SIZE);
     StateVector K3(nbodies * STATE_SIZE), K4(nbodies * STATE_SIZE);
 
@@ -244,7 +172,15 @@ StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double 
     K3 = dt * dynamics(X + 0.5 * K2, t + 0.5 * dt, dt,  nbodies, rb, env);
     K4 = dt * dynamics(X + K3, t + dt, dt, nbodies, rb, env);
 
-    return X + (K1 + 2 * K2 + 2 * K3 + K4) / 6.0;
+    //cout << "----------X: " << endl; X.print(); cout << endl;
+    //cout << "----------K1: " << endl; K1.print(); cout << endl;
+    //cout << "----------K2: " << endl; K2.print(); cout << endl;
+    //cout << "----------K3: " << endl; K3.print(); cout << endl;
+    //cout << "----------K4: " << endl; K4.print(); cout << endl;
+    //cout << "----------((K1 + (2 * K2) + (2 * K3) + K4) / 6.0): " << endl; ((K1 + (2 * K2) + (2 * K3) + K4) / 6.0).print(); cout << endl;
+    //cout << "----------(X + ((K1 + (2 * K2) + (2 * K3) + K4) / 6.0)): " << endl; (X + ((K1 + (2 * K2) + (2 * K3) + K4) / 6.0)).print(); cout << endl;
+
+    return X + ((K1 + (2 * K2) + (2 * K3) + K4) / 6.0);
 }
 
 void RBSystem::takeTimestep(double t, double dt) {
@@ -256,22 +192,30 @@ void RBSystem::takeTimestep(double t, double dt) {
     for(int i = 0; i < nbodies; i ++) {
         if (rblist[i].getType() != 1) {
             StatetoX(rblist[i].getX(), rblist[i].getQ(),
-                     rblist[i].getP(), rblist[i].getL(), Y);
+                     rblist[i].getP(), rblist[i].getL(), Y, i);
             //cout << "Y: \n" << endl;
             //Y.print();
             Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Env);
 
-            //cout << "Ydot: \n" << endl;
-            //Ydot.print();
+            cout << "Ydot AFTER FIRST DYNAMICS() line 282: " << endl;
+            Ydot.print();
 
             Xnew = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
-            XtoState(x, q, p, l, Xnew);
+
+            cout << "Xnew AFTER RK4() line 287: " << endl;
+            Xnew.print();
+            cout << endl;
+
+            XtoState(x, q, p, l, Xnew, i);
 
             rblist[i].setICs(x, q, p, l);
+            cout << endl << endl << "rblist[" << i << "].print(): " << endl;
+            rblist[i].print();
+            cout << endl;
         }
     }
 
-    printsys();
+    //printsys();
 }
 
 void RBSystem::drawSys(){

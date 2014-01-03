@@ -38,13 +38,18 @@ protected:
   int triangles[MAXTRIANGLES][3];   // 3 vertex indices for each triangle
   Vector3d normals[MAXTRIANGLES];   // unit normal vector for each triangle
   int ntriangles;		    // count of the number of triangles
+  Vector3d overtices[MAXVERTICES];       // original vertex coordinates
+  Vector3d onormals[MAXTRIANGLES];       // original normals for each triangle
+
+  Vector3d Center;          // center of mass...
 
   void Clean();			    // bookkeeping, remove all vertices and triangles
 
   int AddVertex(const Vector3d &v); // insert a simple vertex into vertex table
   int AddTriangle(int v0, int v1, int v2);  // insert a triangle, and its normal
 
-  Vector3d Center;          // center of mass...
+  void CopyToOVert();
+  void CopyToONorm();
 
 public:
   // Constructor, make sure model is empty

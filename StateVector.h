@@ -19,6 +19,7 @@ struct StateVector{
     void setSize(int numentires);
 
     void print();
+    const void print() const;
 
     double &operator[](int i) { return states[i]; }
     const double &operator[](int i) const;

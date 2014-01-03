@@ -26,6 +26,12 @@ void StateVector::print() {
         cout << "     StateVector[" << i << "]: " << states[i] << endl;
 }
 
+const void StateVector::print() const {
+    cout << "StateVector Size: " << N << endl;
+    for (int i = 0; i < N; i++)
+        cout << "     StateVector[" << i << "]: " << states[i] << endl;
+}
+
 StateVector::StateVector(const StateVector& o) {
     setSize(o.N);
 

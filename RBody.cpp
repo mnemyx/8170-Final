@@ -120,8 +120,6 @@ void RBody::setICs(Vector3d x, Quaternion q, Vector3d p, Vector3d l){
   ComputeAuxiliaries();
 }
 
-
-
 void RBody::ComputeAuxiliaries(){
   v = Minv * P;
   Iinv = R * Ibodyinv * R.transpose();

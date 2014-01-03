@@ -84,6 +84,9 @@ class RBody {
 		const Vector3d gett() const { return torque; }
 		const Matrix3x3 getr() const { return R; }
 
+		int getrbi() { return rbi; }
+		const int getrbi() const { return rbi; }
+
 		Vector3d getvertex(int idx) { return shape->GetVertex(idx); }
 		const Vector3d getvertex(int indx) const { return shape->GetVertex(indx); }
 		Matrix3x3 getIbodyinv() { return Ibodyinv; }

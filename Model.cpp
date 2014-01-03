@@ -26,6 +26,16 @@ void Model::Clean(){
   nvertices = ntriangles = 0;
 }
 
+void Model::CopyToOVert() {
+    for(int i = 0; i < nvertices; i++)
+        overtices[i].set(vertices[i]);
+}
+
+void Model::CopyToONorm() {
+    for(int i = 0; i < ntriangles; i++)
+        onormals[i].set(normals[i]);
+}
+
 //
 // Insert a vertex into the vertex table
 //
@@ -36,6 +46,7 @@ int Model::AddVertex(const Vector3d &v){
   }
 
   vertices[nvertices] = v;
+  overtices[nvertices] = v;
 
   return nvertices++;
 }
@@ -65,10 +76,13 @@ int Model::AddTriangle(int v0, int v1, int v2){
   //cout << endl;
 
   Vector nullv(0,0,0);
-  if ((V01 % V02).norm() == 0)
+  if ((V01 % V02).norm() == 0) {
 	  normals[ntriangles].set(nullv);
-  else
+	  onormals[ntriangles].set(nullv);
+  } else {
 	normals[ntriangles] = (V01 % V02).normalize();
+	onormals[ntriangles] = (V01 % V02).normalize();
+  }
 
   //cout << "normal for triangle: " << ntriangles << " --- ";
   //normals[ntriangles].print();
@@ -108,13 +122,16 @@ void Model::BuildCuboid(float width, float height, float depth, double x, double
   for(ksign = -1; ksign <= 1; ksign += 2)
     for(jsign = -1; jsign <= 1; jsign += 2)
       for(isign = -1; isign <= 1; isign += 2){
-	vector.set(isign * width / 2, jsign * height / 2, ksign * depth / 2);
-	v[i++] = AddVertex(vector + Center);
+        vector.set(isign * width / 2, jsign * height / 2, ksign * depth / 2);
+        v[i++] = AddVertex(vector + Center);
       }
 
   // construct the 12 triangles that make the 6 faces
   for(i = 0; i < 36; i += 3)
     AddTriangle(v[vlist[i]], v[vlist[i + 1]], v[vlist[i + 2]]);
+
+  CopyToOVert();
+  CopyToONorm();
 }
 
 //
@@ -280,7 +297,6 @@ void Model::BuildSphere(double r, double x, double y, double z) {
 				AddTriangle(v[i], v[i+1], v[i+2]);
 		}
 	}
-
 }
 
 //
@@ -484,10 +500,10 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
     Center = x;
 
     for (int i = 0; i < nvertices; i++)
-        vertices[i] = R * vertices[i] + Center;
+        vertices[i] = R * overtices[i] + Center;
 
     for (int i = 0; i < ntriangles; i++)
-        normals[i] = (R * normals[i]).normalize();
+        normals[i] = (R * onormals[i]).normalize();
 }
 
 void Model::print() {

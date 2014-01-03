@@ -64,7 +64,7 @@ const int NUMBODIES = 3;
 
 const int TimerDelay = 100; // 1/10 second delay between time steps
 
-const double dt = .05;
+const double dt = .5;
 static double t;
 
 static bool Stopped;
@@ -97,14 +97,14 @@ void loadParams(char *file) {
 
     while(indata >> check) {
         if(strcmp(check, "environment") == 0) {
-            cout << " LOADING ENVIRONMENT DATA " << endl;
+            //cout << " LOADING ENVIRONMENT DATA " << endl;
             for(int i=0; i<7; i++)
                 indata >> vars[i];
 
             RBSys->setEnv(Vector(vars[0], vars[1], vars[2]), Vector(vars[3], vars[4], vars[5]), vars[6]);
         } else if (strcmp(check, "rbodies") == 0) {
 
-            cout << "LOADING RBODY DATA " << endl;
+            //cout << "LOADING RBODY DATA " << endl;
             indata >> numof;
 
             double m[numof], w[numof], h[numof], d[numof], d1[numof], d2[numof], d3[numof];
@@ -213,6 +213,7 @@ void getShading() {
     // set up material colors to current hue.
     for(int i = 0; i < 3; i++)
       ambient_color[i] = diffuse_color[i] = specular_color[i] = 0;
+
     ambient_color[3] = diffuse_color[3] = specular_color[3] = 1;
     shininess = 1;
 
