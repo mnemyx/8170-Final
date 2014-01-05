@@ -35,7 +35,7 @@ struct OverlapList{
   void Insert(RBody *rb1, RBody *rb2);
   void Remove(RBody *rb1, RBody *rb2);
 
-  void MergeOverlaps(OverlapList &x, OverlapList &y);
+  void MergeOverlaps(OverlapList &x, OverlapList &y, OverlapList &z);
 
   void FindWitnesses();
 

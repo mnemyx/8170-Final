@@ -13,8 +13,8 @@ else
   endif
 endif
 
-HFILES = ExtentList.${H} OverlapList.${H} Witness.${H} EntryTable.${H} Plane.${H} StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
-OFILES = ExtentList.o OverlapList.o Witness.o EntryTable.o Plane.o StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
+HFILES = ContactList.${H} ExtentList.${H} OverlapList.${H} Witness.${H} EntryTable.${H} Plane.${H} StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
+OFILES = ContactList.o ExtentList.o OverlapList.o Witness.o EntryTable.o Plane.o StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
 PROJECT = rb
 
 ${PROJECT}:	${PROJECT}.o ${OFILES}
@@ -22,6 +22,9 @@ ${PROJECT}:	${PROJECT}.o ${OFILES}
 
 ${PROJECT}.o: ${PROJECT}.${C} ${HFILES}
 	${CC} ${CFLAGS} -c -Wall ${PROJECT}.${C}
+
+ContactList.o: ContactList.${C} ContactList.${H}
+	${CC} ${CFLAGS} -c ContactList.${C}
 
 ExtentList.o: ExtentList.${C} ExtentList.${H}
 	${CC} ${CFLAGS} -c ExtentList.${C}

@@ -74,15 +74,21 @@ void OverlapList::Remove(RBody *rb1, RBody *rb2){
   }
 }
 
-void OverlapList::MergeOverlaps(OverlapList &x, OverlapList &y){
+void OverlapList::MergeOverlaps(OverlapList &x, OverlapList &y, OverlapList &z){
   RBody *rb1, *rb2;
   Overlap ovl;
   bool done;
 
   Clear();
-  for(ovl = x.First(done); !done; ovl = x.Next(done))
-    if(y.Inlist(ovl.a, ovl.b))
+  for(ovl = x.First(done); !done; ovl = x.Next(done)) {
+    if(y.Inlist(ovl.a, ovl.b) || z.Inlist(ovl.a, ovl.b))
       Insert(ovl.a, ovl.b);
+  }
+
+  for(ovl = y.First(done); !done; ovl = y.Next(done)) {
+    if(z.Inlist(ovl.a, ovl.b) && Inlist(ovl.a, ovl.b))
+      Insert(ovl.a, ovl.b);
+  }
 }
 
 void OverlapList::FindWitnesses(){

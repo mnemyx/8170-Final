@@ -84,7 +84,7 @@ void ContactList::Insert(const Overlap &newoverlap){
   contacts[i].n = newoverlap.witness.plane.n;
 }
 
-void ContactList::Remove(RigidBody *rb1, RigidBody *rb2){
+void ContactList::Remove(RBody *rb1, RBody *rb2){
   int i;
 
   if((i = entries.get(rb1->rbi, rb2->rbi)) != -1){

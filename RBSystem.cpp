@@ -19,16 +19,34 @@ Matrix3x3 star(const Vector3d &omega) {
 RBSystem::RBSystem(int nbods) {
     nbodies = nbods;
     rblist = new RBody[nbodies];
+    trylist = new RBody[nbodies];
 
-    for(int i = 0; i < nbodies; i++)
+    for(int i = 0; i < nbodies; i++) {
         rblist[i].setRBI(i);
+        trylist[i].setRBI(i);
+    }
 
     Y.setSize(nbodies * STATE_SIZE);
     Ydot.setSize(nbodies * STATE_SIZE);
+
+    xextents.setMaxBodies(nbodies);
+    xextents.setListType(XEXT);
+
+    yextents.setMaxBodies(nbodies);
+    yextents.setListType(YEXT);
+
+    zextents.setMaxBodies(nbodies);
+    zextents.setListType(ZEXT);
+
+    alloverlaps.setSize(nbodies);
+    allcollisions.setSize(nbodies);
+
+    allcontacts.setSize(nbodies);
 }
 
 RBSystem::~RBSystem() {
     delete []rblist;
+    delete []trylist;
 }
 
 void RBSystem::setParams(double m[], double width[], double height[], double depth[], int type[], double d1[], double d2[], double d3[], Vector4d c[]) {
@@ -39,6 +57,9 @@ void RBSystem::setParams(double m[], double width[], double height[], double dep
         //cout << "depth[" << i << "]: " << depth[i] << endl;
         rblist[i].setParams(m[i], width[i], height[i], depth[i], type[i], d1[i], d2[i], d3[i]);
         rblist[i].setColor(c[i]);
+
+        trylist[i].setParams(m[i], width[i], height[i], depth[i], type[i], d1[i], d2[i], d3[i]);
+        trylist[i].setColor(c[i]);
     }
 }
 
@@ -49,10 +70,42 @@ void RBSystem::setEnv(Vector3d g, Vector3d w, double v) {
 }
 
 void RBSystem::initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vector3d omega0[]) {
+    xextents.Clear();
+    yextents.Clear();
+    zextents.Clear();
+
     for(int i = 0; i < nbodies; i++) {
         rblist[i].initICs(x0[i], q[i], v0[i], omega0[i]);
+        //rblist[i].ComputeAuxiliaries();
+
+        trylist[i].initICs(x0[i], q[i], v0[i], omega0[i]);
+        //trylist[i].ComputeAuxiliaries();
         //rblist[i].print();
+
+        xextents.insertBody(&rblist[i]);
+        yextents.insertBody(&rblist[i]);
+        zextents.insertBody(&rblist[i]);
     }
+
+    xextents.Sort(1);
+    xextents.print();
+
+    yextents.Sort(1);
+    yextents.print();
+
+    zextents.Sort(1);
+    zextents.print();
+
+    alloverlaps.Clear();
+    alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
+    alloverlaps.FindWitnesses();
+    alloverlaps.print();
+
+    allcontacts.Clear();
+    allcontacts.ExtractContacts(alloverlaps);
+    allcontacts.print();
+    cout << endl;
+
 }
 
 void XtoState(Vector3d &x, Quaternion &q, Vector3d &p, Vector3d &l, const StateVector X, const int rbi) {
@@ -215,6 +268,20 @@ void RBSystem::takeTimestep(double t, double dt) {
         }
     }
 
+    xextents.UpdateExtents();
+    xextents.print();
+    yextents.UpdateExtents();
+    yextents.print();
+    zextents.UpdateExtents();
+    zextents.print();
+
+    alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
+    alloverlaps.FindWitnesses();
+    alloverlaps.print();
+
+    allcontacts.ExtractContacts(alloverlaps);
+    allcontacts.print();
+    cout << endl;
     //printsys();
 }
 
