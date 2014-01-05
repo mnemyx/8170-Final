@@ -98,6 +98,10 @@ class RBody {
 
         Witness findWitness(RBody *rb, int swapping = 0);
         Plane getPlane(RBody *other, int which);
+
+        Vector3d r(const Vector3d &p);      // vector from COM to p
+        Vector3d dpdt(const Vector3d &p);   // velocity of point p
+        double invInertia(const Vector3d &r, const Vector3d &n);
 };
 
 #endif

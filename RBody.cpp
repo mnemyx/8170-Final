@@ -256,3 +256,15 @@ Witness RBody::findWitness(RBody *rb, int swapping){
 Plane RBody::getPlane(RBody *other, int which){
   return shape->ThisPlane(other->shape, which);
 }
+
+Vector3d RBody::r(const Vector3d &p){
+  return p - X;
+}
+
+Vector3d RBody::dpdt(const Vector3d &p){
+  return v + omega * r(p).normalize();
+}
+
+double RBody::invInertia(const Vector3d &r, const Vector3d &n){
+  return Minv + Iinv * n * ((r.normalize() * n) * r.normalize());
+}
