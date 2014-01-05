@@ -45,10 +45,6 @@ protected:
 
   Vector3d Center;          // center of mass...
 
-  double left, right, bottom, top, zback, zfront;
-  int current_vtx;
-  int current_plane;
-
   void Clean();			    // bookkeeping, remove all vertices and triangles
 
   int AddVertex(const Vector3d &v); // insert a simple vertex into vertex table
@@ -62,6 +58,10 @@ protected:
 public:
   // Constructor, make sure model is empty
   Model();
+
+  double left, right, bottom, top, zback, zfront;
+  int current_vtx;
+  int current_plane;
 
   // Make a cuboid model
   void BuildCuboid(float width = 1.0, float height = 1.0, float depth = 1.0, double x = 0.0, double y = 0.0, double z = 0.0);
