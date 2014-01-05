@@ -13,8 +13,8 @@ else
   endif
 endif
 
-HFILES = Witness.${H} EntryTable.${H} Plane.${H} StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
-OFILES = Witness.o EntryTable.o Plane.o StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
+HFILES = OverlapList.${H} Witness.${H} EntryTable.${H} Plane.${H} StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
+OFILES = OverlapList.o Witness.o EntryTable.o Plane.o StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
 PROJECT = rb
 
 ${PROJECT}:	${PROJECT}.o ${OFILES}
@@ -22,6 +22,9 @@ ${PROJECT}:	${PROJECT}.o ${OFILES}
 
 ${PROJECT}.o: ${PROJECT}.${C} ${HFILES}
 	${CC} ${CFLAGS} -c -Wall ${PROJECT}.${C}
+
+OverlapList.o: OverlapList.${C} OverlapList.${H}
+	${CC} ${CFLAGS} -c OverlapList.${C}
 
 Witness.o: Witness.${C} Witness.${H}
 	${CC} ${CFLAGS} -c Witness.${C}

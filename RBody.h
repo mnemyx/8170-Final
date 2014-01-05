@@ -25,9 +25,6 @@ enum {CUBE, PLANE};
 
 class RBody {
 	private:
-        int rbi;            // rigid body index
-        int rbtype;         // rigid body type: 0 cube, 1 plane
-
         /** constant quantities **/
         double M, Minv;           // mass
         Matrix3x3 Ibody, Ibodyinv;           // moments of inertia...tensor?
@@ -48,6 +45,8 @@ class RBody {
         Vector4d color;
 
 	public:
+        int rbi;            // rigid body index
+        int rbtype;         // rigid body type: 0 cube, 1 plane
         Model *shape;
 
         RBody(double m = 1, double width = 10.0, double height = 10.0, double depth = 10.0, int type = CUBE, double d1 = 1.0, double d2 = 1.0, double d3 = 1.0);
