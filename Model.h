@@ -41,10 +41,13 @@ protected:
   int ntriangles;		    // count of the number of triangles
   Vector3d overtices[MAXVERTICES];       // original vertex coordinates
   Vector3d onormals[MAXTRIANGLES];       // original normals for each triangle
+  Plane planes[MAXTRIANGLES];             // only meant to be used with planes/cuboids
 
   Vector3d Center;          // center of mass...
 
   double left, right, bottom, top, zback, zfront;
+  int current_vtx;
+  int current_plane;
 
   void Clean();			    // bookkeeping, remove all vertices and triangles
 
@@ -89,9 +92,18 @@ public:
   Vector3d GetVertex(int indx);
   int GetNtriangles();
   Vector3d GetNormal(int indx);
+  Vector3d GetCenter() { return Center; }
 
   void place_in_world(const Vector3d &x, const Matrix3x3 &R);
   void print();
+
+  Vector3d FirstV(bool &done);
+  Vector3d NextV(bool &done);
+
+  Plane FirstP(bool &done);
+  Plane NextP(bool &done);
+
+  Plane ThisPlane(Model *other, int which);
 
 };
 

@@ -13,8 +13,8 @@ else
   endif
 endif
 
-HFILES = Plane.${H} StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
-OFILES = Plane.o StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
+HFILES = Witness.${H} EntryTable.${H} Plane.${H} StateVector.${H} RBSystem.${H} Strut.${H} Quaternion.${H} RBody.${H} Model.${H} Matrix.${H} Vector.${H} Utility.${H}
+OFILES = Witness.o EntryTable.o Plane.o StateVector.o RBSystem.o Strut.o Quaternion.o RBody.o Model.o Matrix.o Vector.o Utility.o
 PROJECT = rb
 
 ${PROJECT}:	${PROJECT}.o ${OFILES}
@@ -22,6 +22,12 @@ ${PROJECT}:	${PROJECT}.o ${OFILES}
 
 ${PROJECT}.o: ${PROJECT}.${C} ${HFILES}
 	${CC} ${CFLAGS} -c -Wall ${PROJECT}.${C}
+
+Witness.o: Witness.${C} Witness.${H}
+	${CC} ${CFLAGS} -c Witness.${C}
+
+EntryTable.o: EntryTable.${C} EntryTable.${H}
+	${CC} ${CFLAGS} -c EntryTable.${C}
 
 Plane.o: Plane.${C} Plane.${H}
 	${CC} ${CFLAGS} -c Plane.${C}

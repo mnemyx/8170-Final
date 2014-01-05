@@ -158,3 +158,101 @@ void RBody::print() {
   cout << "Color: " << color << endl;
   shape->print();
 }
+
+
+int RBody::checkWitnessPlane(const Plane &witnessplane) const{
+    bool done;
+    bool haveon;
+    int region;
+    Vector3d vtx;
+
+    haveon = false;
+    for(vtx = shape->FirstV(done); !done; vtx = shape->NextV(done))
+        if((region = witnessplane.region(vtx)) == BELOW)
+            return BELOW;
+        else if(region == ON)
+            haveon = true;
+
+    if(haveon)
+        return ON;
+    else
+        return ABOVE;
+}
+
+//
+// Check if a witness plane candidate points away from the
+// object it is attached to. If not, it is not a witness.
+//
+int RBody::checkLocalWitnessPlaneValidity(const Plane &witnessplane) const{
+  int region = witnessplane.region(shape->GetCenter());
+
+  if(region == ABOVE)
+    return BELOW;
+  else
+    return ABOVE;
+}
+
+
+//
+// Given this rigid body and another, find a witness plane. Final plane is
+// labeled BELOW if it is invalid, ON if it is valid and also a contact,
+// ABOVE if it is valid but not a contact
+//
+Witness RBody::findWitness(RBody *rb, int swapping){
+    Vector3d n, p;
+    Vector3d vtx;
+    Plane witnessplane;
+    int idx;
+    int region, localregion;
+    Witness witness;
+    bool done;
+
+    // a=Circle/b=Plane or b=Prism: First check each plane of b to see
+    // if it is a witness
+    for(idx = 0, witnessplane = rb->shape->FirstP(done); !done;
+      idx++, witnessplane = rb->shape->NextP(done)){
+        region = checkWitnessPlane(witnessplane);
+        if(region != BELOW) break;
+    }
+    // if no plane of b is a witness, then check to see if any vertex
+    // of b can be used to construct a witness, with point on plane
+    // being the vertex, and normal to plane being vector from vertex
+    // to center of a
+    if(region == BELOW){
+        for(vtx = rb->shape->FirstV(done); !done && region == BELOW;
+        idx++, vtx = rb->shape->NextV(done)){
+            witnessplane.set(vtx, (shape->GetCenter() - vtx).normalize());
+            region = checkWitnessPlane(witnessplane);
+        if(region != BELOW){
+            localregion = rb->checkLocalWitnessPlaneValidity(witnessplane);
+            if(localregion == BELOW)
+                region = BELOW;
+            }
+        }
+    }
+
+    witness.set(witnessplane, idx, region, this, rb);
+
+
+    // a=Plane or a=Prism/b=Plane or b=Prism: First check each plane of b
+    // to see if it is a witness
+    for(idx = 0, witnessplane = rb->shape->FirstP(done); !done;
+    idx++, witnessplane = rb->shape->NextP(done)){
+        region = checkWitnessPlane(witnessplane);
+        if(region != BELOW) break;
+    }
+
+    // if no plane of b is a witness, then swap a and b and solve recursively
+    if(region == BELOW && !swapping){
+        swapping = 1;
+        witness = rb->findWitness(this, swapping);
+    }
+    else    // either this is a witness or we have checked everything in vain
+        witness.set(witnessplane, idx, region, this, rb);
+
+  return witness;
+}
+
+Plane RBody::getPlane(RBody *other, int which){
+  return shape->ThisPlane(other->shape, which);
+}

@@ -12,6 +12,8 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "Model.h"
+#include "Plane.h"
+#include "Witness.h"
 
 #ifdef __APPLE__
 #  include <GLUT/glut.h>
@@ -43,11 +45,11 @@ class RBody {
 
         /** computed quantities **/
         Vector3d force, torque;
-
-        Model *shape;
         Vector4d color;
 
 	public:
+        Model *shape;
+
         RBody(double m = 1, double width = 10.0, double height = 10.0, double depth = 10.0, int type = CUBE, double d1 = 1.0, double d2 = 1.0, double d3 = 1.0);
         ~RBody();
 
@@ -91,6 +93,12 @@ class RBody {
 		const Vector3d getvertex(int indx) const { return shape->GetVertex(indx); }
 		Matrix3x3 getIbodyinv() { return Ibodyinv; }
 		const Matrix3x3 getIbodyinv() const { return Ibodyinv; }
+
+        int checkWitnessPlane(const Plane &witnessplane) const;
+        int checkLocalWitnessPlaneValidity(const Plane &witnessplane) const;
+
+        Witness findWitness(RBody *rb, int swapping = 0);
+        Plane getPlane(RBody *other, int which);
 };
 
 #endif
