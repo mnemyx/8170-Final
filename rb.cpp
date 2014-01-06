@@ -64,7 +64,7 @@ const int NUMBODIES = 3;
 
 const int TimerDelay = 100; // 1/10 second delay between time steps
 
-const double dt = .01;
+const double dt = .1;
 static double t;
 
 static bool Stopped;
@@ -116,7 +116,7 @@ void loadParams(char *file) {
             RBSys = new RBSystem(numof);
 
             for(int k = 0; k < numof; k++) {
-                for(int i = 0; i < 22; i++) {
+                for(int i = 0; i < 21; i++) {
                     indata >> vars[i];
 
                 //cout << "vars[" << i << "]: " <<  vars[i] << endl;
@@ -130,10 +130,10 @@ void loadParams(char *file) {
                 d2[k] = vars[6];
                 d3[k] = vars[7];
                 x0[k].set(vars[5], vars[6], vars[7]);
-                q[k].set(vars[8], vars[9]   , vars[10], vars[11]);
-                v0[k].set(vars[12], vars[13], vars[14]);
-                o0[k].set(vars[15], vars[16], vars[17]);
-                c[k].set(vars[18], vars[19], vars[20], vars[21]);
+                q[k].set(vars[8], vars[9], vars[10]);
+                v0[k].set(vars[11], vars[12], vars[13]);
+                o0[k].set(vars[14], vars[15], vars[16]);
+                c[k].set(vars[17], vars[18], vars[19], vars[20]);
             }
 
             RBSys->setParams(m, w, h, d, type, d1, d2, d3, c);
@@ -239,7 +239,7 @@ void handleTimeStep(int n){
         return;
 
     RBSys->takeTimestep(t, dt);
-
+    //RBSys->printsys();
     drawScreen();
     glutPostRedisplay();		// make sure it gets displayed
 

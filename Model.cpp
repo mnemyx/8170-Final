@@ -522,22 +522,24 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
     Vector3d dx, dy;
     Vector3d n;
 
+    for (int i = 0; i < nvertices; i++)
+        vertices[i] = x + (R * (vertices[i] - Center));
+
     Center = x;
 
-    for (int i = 0; i < nvertices; i++)
-        vertices[i] = R * overtices[i] + Center;
-
     for (int i = 0; i < ntriangles; i++)
-        normals[i] = (R * onormals[i]).normalize();
+        normals[i] = (R * normals[i]).normalize();
 
     for(int i = 0; i < ntriangles; i++)
-        planes[i].set(vertices[triangles[i][0]], R * normals[i]);
+        planes[i].set(vertices[triangles[i][0]], (R * normals[i]).normalize());
 
     //print();
     ComputeAABB();
     //cout << endl << "left: " << left << "; right: " << right;
     //cout << endl << "bottom: " << bottom << "; top: " << top;
     //cout << endl << "zback: " << zback << "; zfront: " << zfront;
+
+
 }
 
 void Model::print() {
