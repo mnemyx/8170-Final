@@ -401,9 +401,9 @@ void RBSystem::handleCollisions(double t, double dt) {
 
         // get collision or stop; use euler
         Xc = Euler(Y, Ydot, fc * dt);       //critical point
-        cout << "Xc: " << endl;
+        //cout << "Xc: " << endl;
         Xc.print();
-        cout << endl;
+        //cout << endl;
 
         //if(collided->a->rbtype != 1) {
             XtoState(x, q, p, l, Xc, collided->a->rbi);
@@ -426,12 +426,12 @@ void RBSystem::handleCollisions(double t, double dt) {
         XtoState(x, q, p, l, Xnew, collided->b->rbi);
         collided->b->setICs(x, q, p, l);
 
-        cout << "Xnew: "<<endl; Xnew.print();
+        //cout << "Xnew: "<<endl; Xnew.print();
 
         collided = allcontacts.Next();
     }
 
-    allcontacts.Clear();
+    //allcontacts.Clear();
     // time to event: resting slide-to-stop time fraction
 }
 
