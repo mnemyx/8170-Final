@@ -248,7 +248,6 @@ StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double 
     return X + ((K1 + (2 * K2) + (2 * K3) + K4) / 6.0);
 }
 
-
 void RBSystem::takeFullStep(double t, double dt) {
     StateVector newX;
     Quaternion q;
@@ -259,10 +258,10 @@ void RBSystem::takeFullStep(double t, double dt) {
             newX = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
             XtoState(x, q, p, l, newX, i);
 
-            cout << "x: " << x << endl;
-            cout << "q: " << q << endl;
-            cout << "p: " << p << endl;
-            cout << "l: " << l << endl;
+            //cout << "x: " << x << endl;
+            //cout << "q: " << q << endl;
+            //cout << "p: " << p << endl;
+            //cout << "l: " << l << endl;
 
             rblist[i].setICs(x, q, p, l);
         //}
@@ -340,9 +339,8 @@ void RBSystem::handleCollisions(double t, double dt) {
     Vector3d dx, x, dp, p, dl, l;
     Vector3d ptang, pnorm;
     double dpt, pt, dxn, d, fc;
-    StateVector Xc, Xnew;
+    StateVector Xc, Xnew(nbodies * STATE_SIZE);
     Vector3d fj;
-
     Contact *collided = allcontacts.First();
 
     while(collided != NULL) {
@@ -403,21 +401,24 @@ void RBSystem::handleCollisions(double t, double dt) {
 
         // get collision or stop; use euler
         Xc = Euler(Y, Ydot, fc * dt);       //critical point
+        cout << "Xc: " << endl;
+        Xc.print();
+        cout << endl;
 
         //if(collided->a->rbtype != 1) {
             XtoState(x, q, p, l, Xc, collided->a->rbi);
             collided->a->setICs(x, q, (p)+fj, (l)+(ra % fj));
-            StatetoX(collided->a->getX(), collided->a->getQ(), collided->a->getP(), collided->a->getL(), Ydot, collided->a->rbi);
+            StatetoX(collided->a->getX(), collided->a->getQ(), collided->a->getP(), collided->a->getL(), Y, collided->a->rbi);
         //}
 
         //if(collided->b->rbtype != 1) {
             XtoState(x, q, p, l, Xc, collided->b->rbi);
             collided->b->setICs(x, q, (p)-fj, (l)-(rb % fj));
-            StatetoX(collided->b->getX(), collided->b->getQ(), collided->b->getP(), collided->b->getL(), Ydot, collided->b->rbi);
-        //} **/
+            StatetoX(collided->b->getX(), collided->b->getQ(), collided->b->getP(), collided->b->getL(), Y, collided->b->rbi);
+        //}
 
         // finish off timestep...?
-        Xnew = Euler(Xc, Ydot, (1 - fc) * dt);
+        Xnew = Euler(Y, Ydot, (1 - fc) * dt);
 
         XtoState(x, q, p, l, Xnew, collided->a->rbi);
         collided->a->setICs(x, q, p, l);
