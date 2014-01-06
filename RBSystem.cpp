@@ -270,20 +270,28 @@ void RBSystem::takeFullStep(double t, double dt) {
             //cout << "p: " << p << endl;
             //cout << "l: " << l << endl;
 
-
             rblist[i].setICs(x, q, p, l);
         //}
     }
 }
 
 void RBSystem::takeTimestep(double t, double dt) {
+    StateVector rbSV;
+    Quaternion q;
+    Vector3d x, p, l;
     for(int i = 0; i < nbodies; i ++) {
         //if (rblist[i].getType() != 1) {
             StatetoX(rblist[i].getX(), rblist[i].getQ(), rblist[i].getP(), rblist[i].getL(), Y, i);
             //cout << "Y: " << endl;
             //Y.print();
             //cout << endl;
-            Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Env);
+            rbSV = dynamics(Y, t, dt, nbodies, rblist[i], Env);
+
+            XtoState(x, q, p, l, rbSV, i);
+            StatetoX(x, q, p, l, Ydot, i);
+
+            //cout << "i: " << i << endl;
+            //Ydot.print(); cout << endl;
            // cout << "Ydot: " <<endl;
             //Ydot.print();
             //cout << endl;
@@ -298,9 +306,15 @@ bool RBSystem::checkCollisions(double t, double dt) {
 
     for(int i = 0; i < nbodies; i ++) {
         //if (rblist[i].getType() != 1) {
+        Y.print();
+        cout << "^^^^^^" << endl;
+        Ydot.print();
             xeuler = Euler(Y, Ydot, dt);
             XtoState(x, q, p, l, xeuler, i);
 
+            cout << "xeuler: " << endl;
+            xeuler.print();
+            cout << endl;
             rblist[i].setICs(x, q, p, l);
         //}
     }
@@ -342,6 +356,7 @@ void RBSystem::handleCollisions(double t, double dt) {
         pnorm = (collided->n * collided->p) * collided->p;
         ptang = collided->p - pnorm;
 
+        Y.print();
         // variables before collision...
         XtoState(x, q, p, l, Y, collided->a->rbi);
 

@@ -253,9 +253,9 @@ Vector3d RBody::r(const Vector3d &p){
 }
 
 Vector3d RBody::dpdt(const Vector3d &p){
-  return v + omega * r(p).normalize();
+  return v + (omega % r(p));
 }
 
 double RBody::invInertia(const Vector3d &r, const Vector3d &n){
-  return Minv + Iinv * n * ((r.normalize() * n) * r.normalize());
+  return Minv + n * Iinv * ((r % n) % r);
 }
