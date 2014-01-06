@@ -75,6 +75,8 @@ class RBody {
 		const Vector3d getX() const { return X; }
         int getType() { return rbtype; }
         int getType() const { return rbtype; }
+        Matrix3x3 getIinv() { return Iinv; }
+        void setv(Vector3d vm) { v = vm; }
 
 		Vector3d getv() { return v; }
 		Vector3d getw() { return omega; }

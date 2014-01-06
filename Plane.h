@@ -10,7 +10,7 @@
 #include "Vector.h"
 
 enum {BELOW, ON, ABOVE};
-const double EPS = .75;
+const double EPS = .6;
 
 struct Plane{
   Vector3d p;
