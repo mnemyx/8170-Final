@@ -141,7 +141,7 @@ void loadParams(char *file) {
         }
     }
 
-    //RBSys->printsys();
+    RBSys->printsys();
 
     indata.close();
 }
@@ -337,8 +337,8 @@ void handleKeys(unsigned char key, int x, int y){
   case 's':
     case 'S':
       Step = !Step;
-      if(Step) cout << "Stepped Mode";
-      else cout << "Continous Mode";
+      //if(Step) cout << "Stepped Mode";
+      //else cout << "Continous Mode";
       break;
 
     case 'd':

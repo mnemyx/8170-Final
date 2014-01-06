@@ -69,23 +69,28 @@ void RBody::setParams(double m, double width, double height, double depth, int t
     p3 = p3 + c;
 
     shape->BuildPlane(p3, p2, p1, p0, c);
-  } else
+
+    Minv = 0;
+    Ibodyinv.set(0,0,0,0,0,0,0,0,0);
+
+  } else {
     shape->BuildCuboid(width, height, depth, d1, d2, d3);
-//cout << "m: " << m << endl;
-  a_ainv(m, M, Minv);
-  //cout << "M: " << M << "; Minv: " << Minv << endl;
-  //cout << "height: " << height << "; depth: " << depth << "; width: " << width << endl;
-  //cout << "(height * height + depth * depth): " << (height * height + depth * depth) * M * 1 / 12<< endl;
-//cout << "1/12 * M * (height * height + depth * depth): " << 1/12 * M  << endl;
-  Ibody.set((height * height + depth * depth) * M * 1 / 12, 0, 0,
+    //cout << "m: " << m << endl;
+    a_ainv(m, M, Minv);
+    //cout << "M: " << M << "; Minv: " << Minv << endl;
+    //cout << "height: " << height << "; depth: " << depth << "; width: " << width << endl;
+    //cout << "(height * height + depth * depth): " << (height * height + depth * depth) * M * 1 / 12<< endl;
+    //cout << "1/12 * M * (height * height + depth * depth): " << 1/12 * M  << endl;
+    Ibody.set((height * height + depth * depth) * M * 1 / 12, 0, 0,
             0, (height * height + depth * depth) * M * 1 / 12, 0,
             0, 0, (height * height + depth * depth) * M * 1 / 12);
-  //cout << "Ibody: " << endl;
-  //Ibody.print();
+    //cout << "Ibody: " << endl;
+    //Ibody.print();
 
-  Ibodyinv = Ibody.inv();
-  //cout << "Ibodyinv: " << endl;
-  //Ibodyinv.print();
+    Ibodyinv = Ibody.inv();
+    //cout << "Ibodyinv: " << endl;
+    //Ibodyinv.print();
+  }
 
 }
 
@@ -95,7 +100,7 @@ void RBody::initICs(Vector3d x0, Quaternion q, Vector3d v0, Vector3d omega0){
   //Q.print();
   //Q.normalize().print();
   //Q.normalize().rotation().print();
-  //R = Q.normalize().rotation();
+  R = Q.normalize().rotation();
   //cout << "R: " << endl;
   //R.print();
   I = R * Ibody * R.transpose();
@@ -165,13 +170,18 @@ int RBody::checkWitnessPlane(const Plane &witnessplane) const{
     bool haveon;
     int region;
     Vector3d vtx;
-
+//cout << "checkWitnessPlane(): "; witnessplane.print(); cout << endl;
     haveon = false;
-    for(vtx = shape->FirstV(done); !done; vtx = shape->NextV(done))
-        if((region = witnessplane.region(vtx)) == BELOW)
+    for(vtx = shape->FirstV(done); !done; vtx = shape->NextV(done)) {
+        //cout << "vtx: " << vtx << endl;
+        region = witnessplane.region(vtx);
+
+        //cout << "region " << ((region== BELOW)? "BELOW": (region == ON)? "ON": "ABOVE") << ", ";
+        if(region == BELOW)
             return BELOW;
         else if(region == ON)
             haveon = true;
+    }
 
     if(haveon)
         return ON;
@@ -207,42 +217,18 @@ Witness RBody::findWitness(RBody *rb, int swapping){
     Witness witness;
     bool done;
 
-    // a=Circle/b=Plane or b=Prism: First check each plane of b to see
-    // if it is a witness
-    for(idx = 0, witnessplane = rb->shape->FirstP(done); !done;
-      idx++, witnessplane = rb->shape->NextP(done)){
-        region = checkWitnessPlane(witnessplane);
-        if(region != BELOW) break;
-    }
-    // if no plane of b is a witness, then check to see if any vertex
-    // of b can be used to construct a witness, with point on plane
-    // being the vertex, and normal to plane being vector from vertex
-    // to center of a
-    if(region == BELOW){
-        for(vtx = rb->shape->FirstV(done); !done && region == BELOW;
-        idx++, vtx = rb->shape->NextV(done)){
-            witnessplane.set(vtx, (shape->GetCenter() - vtx).normalize());
-            region = checkWitnessPlane(witnessplane);
-        if(region != BELOW){
-            localregion = rb->checkLocalWitnessPlaneValidity(witnessplane);
-            if(localregion == BELOW)
-                region = BELOW;
-            }
-        }
-    }
-
-    witness.set(witnessplane, idx, region, this, rb);
-
-
     // a=Plane or a=Prism/b=Plane or b=Prism: First check each plane of b
     // to see if it is a witness
     for(idx = 0, witnessplane = rb->shape->FirstP(done); !done;
     idx++, witnessplane = rb->shape->NextP(done)){
+    //cout << "witnessplane: "; witnessplane.print(); cout << endl;
         region = checkWitnessPlane(witnessplane);
+        //cout << "region: " << region << endl;
         if(region != BELOW) break;
     }
 
     // if no plane of b is a witness, then swap a and b and solve recursively
+    //cout << "swapping: " << swapping << endl;
     if(region == BELOW && !swapping){
         swapping = 1;
         witness = rb->findWitness(this, swapping);

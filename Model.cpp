@@ -530,7 +530,8 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
     for (int i = 0; i < ntriangles; i++)
         normals[i] = (R * onormals[i]).normalize();
 
-
+    for(int i = 0; i < ntriangles; i++)
+        planes[i].set(vertices[triangles[i][0]], R * normals[i]);
 
     //print();
     ComputeAABB();
@@ -547,10 +548,14 @@ void Model::print() {
     cout << "Triangles: " << endl;
     for(int i = 0; i < ntriangles; i++)
         cout << "t[" << i << "]: (" << triangles[i][0] << ", " << triangles[i][1] << ", "<< triangles[i][2] << ")\n";
-    cout << "Normals: \n";
+    cout << "Normals: " << endl;
     for(int i = 0; i < ntriangles; i++)
         cout << "n[" << i << "]: " << normals[i] << '\n';
-
+    cout << "Planes:" << endl;
+    for(int i = 0; i < ntriangles; i++) {
+        cout << "planes[" << i << "]: ";
+        planes[i].print();
+    }
 }
 
 Vector3d Model::FirstV(bool &done) {
@@ -561,7 +566,7 @@ Vector3d Model::FirstV(bool &done) {
 }
 
 Vector3d Model::NextV(bool &done) {
-    if(current_vtx >= nvertices) {
+    if(current_vtx >= nvertices - 1) {
         done = true;
     } else {
         done = false;
@@ -579,12 +584,14 @@ Plane Model::FirstP(bool &done) {
 }
 
 Plane Model::NextP(bool &done) {
-    if(current_plane >= ntriangles) {
+    if(current_plane >= ntriangles - 1) {
         done = true;
     } else {
         done =false;
         current_plane++;
     }
+    //cout << "current_plane: " << current_plane << endl;
+    //cout << "planes[current_plane]: "; planes[current_plane].print(); cout << endl;
 
     return planes[current_plane];
 }
@@ -599,6 +606,8 @@ Plane Model::ThisPlane(Model *other, int which) {
         n = (other->GetVertex(0) - vertices[which]).normalize();
         p = vertices[which];
         thisplane.set(p, n);
+
+        cout << "thisplane: "; thisplane.print(); cout << endl;
     }
 
     return thisplane;

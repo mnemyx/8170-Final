@@ -34,11 +34,13 @@ void Contact::set(RBody *abody, RBody *bbody, const Plane &plane){
   n = plane.n;
 }
 
-double Contact::vrel(){
+Vector3d Contact::vrel(){
+  //cout << endl << "a dpdt(p): " << a->dpdt(p) << endl;
+  //cout << "b dpdt(p): " << b->dpdt(p) << endl;
   return (a->dpdt(p) - b->dpdt(p)) * n;
 }
 
-double Contact::impulse(){
+Vector3d Contact::impulse(){
   return -vrel() / (a->invInertia(a->r(p), n) + b->invInertia(b->r(p), n));
 }
 
@@ -149,6 +151,8 @@ void ContactList::print(){
     cout << "a " << contacts[i].a << ", b " << contacts[i].b;
     cout << ", p "; contacts[i].p.print();
     cout << ", n "; contacts[i].n.print();
+    cout << ", vrel " << contacts[i].vrel();
+    cout << ", impulse " << contacts[i].impulse();
   }
   cout << endl;
 }

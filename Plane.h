@@ -10,7 +10,7 @@
 #include "Vector.h"
 
 enum {BELOW, ON, ABOVE};
-const double EPS = 0.001;
+const double EPS = 1;
 
 struct Plane{
   Vector3d p;
@@ -26,6 +26,7 @@ struct Plane{
   int region(const Vector3d &x, double offset = 0) const;
 
   void print();
+  void print() const;
   void draw(double length = 0.0);
 
   void drawnormal(Vector3d p, Vector3d n);

@@ -92,9 +92,17 @@ void OverlapList::MergeOverlaps(OverlapList &x, OverlapList &y, OverlapList &z){
 }
 
 void OverlapList::FindWitnesses(){
-
-  for(int i = 0; i < noverlaps; i++)
+    //cout << "OverlapList: " << endl;
+    //print();
+    //cout << endl;
+  for(int i = 0; i < noverlaps; i++) {
     overlaps[i].witness = overlaps[i].a->findWitness(overlaps[i].b);
+    //cout << "In FindWitnesses(): overlaps[" << i << "]" << endl;
+    //overlaps[i].witness.print();
+    //cout << endl;
+  }
+
+
 }
 
 Overlap OverlapList::First(bool &done){
@@ -131,8 +139,11 @@ Overlap OverlapList::Next(bool &done){
 void OverlapList::print(){
 
   cout << "OVERLAPLIST:\n";
-  for(int i = 0; i < noverlaps; i++){
-    cout << "a " << overlaps[i].a << ", b " << overlaps[i].b << ", ";
+  for(int i = 0; i < noverlaps; i++){ /**
+    cout << endl << "a " << endl; overlaps[i].a->print();
+    cout << endl << "b " << endl; overlaps[i].b->print();
+    cout << endl; **/
+    cout << " a " << overlaps[i].a << ", b " << overlaps[i].b << endl;
     overlaps[i].witness.print();
   }
   cout << endl;

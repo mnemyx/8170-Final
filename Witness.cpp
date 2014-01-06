@@ -36,6 +36,7 @@ void Witness::set(const Plane &wplane, int pidx, int st, RBody *abody,
 }
 
 void Witness::updatePlane(){
+cout << "which: " << which << endl;
   plane = b->getPlane(a, which);
 }
 

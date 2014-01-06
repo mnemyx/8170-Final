@@ -38,11 +38,14 @@ double Plane::distance(const Vector3d &x) const{
 
 int Plane::region(const Vector3d &x, double offset) const{
   double d = distance(x);
-
   return ((d > offset + EPS)? ABOVE: ((d > offset - EPS)? ON: BELOW));
 }
 
 void Plane::print(){
+  cout << "p "; p.print(); cout << ", n "; n.print(); cout << endl;
+}
+
+void Plane::print() const{
   cout << "p "; p.print(); cout << ", n "; n.print(); cout << endl;
 }
 

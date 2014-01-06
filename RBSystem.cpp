@@ -88,22 +88,22 @@ void RBSystem::initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vec
     }
 
     xextents.Sort(1);
-    xextents.print();
+    //xextents.print();
 
     yextents.Sort(1);
-    yextents.print();
+    //yextents.print();
 
     zextents.Sort(1);
-    zextents.print();
+    //zextents.print();
 
     alloverlaps.Clear();
     alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
     alloverlaps.FindWitnesses();
-    alloverlaps.print();
+    //alloverlaps.print();
 
     allcontacts.Clear();
     allcontacts.ExtractContacts(alloverlaps);
-    allcontacts.print();
+    //allcontacts.print();
     cout << endl;
 
 }
@@ -111,28 +111,35 @@ void RBSystem::initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vec
 void XtoState(Vector3d &x, Quaternion &q, Vector3d &p, Vector3d &l, const StateVector X, const int rbi) {
     int i = rbi * 13;
 
-    x.set(X[i++],X[i++],X[i++]);
-    q.set(X[i++],X[i++],X[i++],X[i++]);
-    p.set(X[i++],X[i++],X[i++]);
-    l.set(X[i++],X[i++], X[i++]);
+    //X.print();
+
+    x.set(X[i],X[i+1],X[i+2]);
+    q.set(X[i+3],X[i+4],X[i+5],X[i+6]);
+    p.set(X[i+7],X[i+8],X[i+9]);
+    l.set(X[i+19],X[i+11], X[i+12]);
+
+    //cout << "x: " << x << endl;
+    //cout << "q: " << q << endl;
+    //cout << "p: " << p << endl;
+    //cout << "l: " << l << endl;
 }
 
 void StatetoX(const Vector3d x, const Quaternion q, const Vector3d p, const Vector3d l, StateVector &X, const int rbi) {
     int i = rbi * 13;
 
-    X[i++] = x.x;
-    X[i++] = x.y;
-    X[i++] = x.z;
-    X[i++] = q.q.w;
-    X[i++] = q.q.x;
-    X[i++] = q.q.y;
-    X[i++] = q.q.z;
-    X[i++] = p.x;
-    X[i++] = p.y;
-    X[i++] = p.z;
-    X[i++] = l.x;
-    X[i++] = l.y;
-    X[i++] = l.z;
+    X[i] = x.x;
+    X[i+1] = x.y;
+    X[i+2] = x.z;
+    X[i+3] = q.q.w;
+    X[i+4] = q.q.x;
+    X[i+5] = q.q.y;
+    X[i+6] = q.q.z;
+    X[i+7] = p.x;
+    X[i+8] = p.y;
+    X[i+9] = p.z;
+    X[i+10] = l.x;
+    X[i+11] = l.y;
+    X[i+12] = l.z;
 }
 
 StateVector dynamics(const StateVector &X, double t, double dt, const int nbodies, const RBody &rb, const Environment &Env) {
@@ -179,32 +186,23 @@ StateVector dynamics(const StateVector &X, double t, double dt, const int nbodie
     //fg = rb.getM() * Env.G;
 
     if (Env.W.x == 0 && Env.W.y == 0 && Env.W.z == 0)
-        fg = (Env.G - Env.Vis * V ) * rb.getM();
+        fg = (Env.G - Env.Vis * V) * rb.getM();
     else
         fg = (Env.G + Env.Vis * (Env.W - V)) * rb.getM();
 
+    // calc force
     //Vector3d p1 = rb.getvertex(spi);
-
-    //fs = - (sp.GetK() / rb.getM()) * ((p1 - sp.GetP0()).norm() - sp.GetL0()) * (p1 - sp.GetP0()).normalize();
-    //fd = - (sp.GetD() / rb.getM()) * ((V * (p1 - sp.GetP0()).normalize()) * (p1 - sp.GetP0()).normalize());
-    //cout << "fs: " << fs << endl;
-
     //fs = -sp.GetK() * ((p1 - sp.GetP0()).norm() - sp.GetL0()) * (p1 - sp.GetP0()).normalize();
-
     //fd = -sp.GetD() * ((V * (p1 - sp.GetP0()).normalize()) * (p1 - sp.GetP0()).normalize());
 
     F = fg;// + fs + fd;
 
     // calc torque
-    //    ts = (p1 - x).norm() % (fs);
-    //    td = (p1 - x).norm() % (fd);
-
     //ts = (p1 - x) % fs;
-
     //td = (p1 - x) % fd;
 
     //T = ts + td;
-    T.set(0, 0, 0);
+    T.set(0,0,0);
 
     StatetoX(V, Q, F, T, newXdot, rb.getrbi());
 
@@ -243,7 +241,7 @@ void RBSystem::takeTimestep(double t, double dt) {
 
     // compute the rate of change of state
     for(int i = 0; i < nbodies; i ++) {
-        if (rblist[i].getType() != 1) {
+        //if (rblist[i].getType() != 1) {
             StatetoX(rblist[i].getX(), rblist[i].getQ(),
                      rblist[i].getP(), rblist[i].getL(), Y, i);
             //cout << "Y: \n" << endl;
@@ -251,7 +249,8 @@ void RBSystem::takeTimestep(double t, double dt) {
             Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Env);
 
             //cout << "Ydot AFTER FIRST DYNAMICS() line 282: " << endl;
-            //Ydot.print();
+            //Ydot.print();./rb p
+
 
             Xnew = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
 
@@ -265,23 +264,23 @@ void RBSystem::takeTimestep(double t, double dt) {
             //cout << endl << endl << "rblist[" << i << "].print(): " << endl;
             //rblist[i].print();
             //cout << endl;
-        }
+        //}
     }
 
     xextents.UpdateExtents();
-    xextents.print();
+    //xextents.print();
     yextents.UpdateExtents();
-    yextents.print();
+    //yextents.print();
     zextents.UpdateExtents();
-    zextents.print();
+    //zextents.print();
 
     alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
     alloverlaps.FindWitnesses();
-    alloverlaps.print();
+    //alloverlaps.print();
 
     allcontacts.ExtractContacts(alloverlaps);
     allcontacts.print();
-    cout << endl;
+    //cout << endl;
     //printsys();
 }
 

@@ -19,8 +19,8 @@ struct Contact{
   Contact();
   ~Contact();
 
-  double vrel();
-  double impulse();
+  Vector3d vrel();
+  Vector3d impulse();
 
   void set(RBody *abody, RBody *body,
 	   const Plane &plane);
