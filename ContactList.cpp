@@ -153,6 +153,7 @@ void ContactList::print(){
     cout << ", n "; contacts[i].n.print();
     cout << ", vrel " << contacts[i].vrel();
     cout << ", impulse " << contacts[i].impulse();
+    cout << endl;
   }
   cout << endl;
 }

@@ -68,11 +68,13 @@ class RBody {
 		Vector3d getP() { return P; }
 		double getM() { return M; }
 		const double getM() const { return M; }
+		const double getMinv() const { return Minv; }
 		const Vector3d getP() const { return P; }
 		const Vector3d getL() const { return L; }
 		const Quaternion getQ() const { return Q; }
 		const Vector3d getX() const { return X; }
         int getType() { return rbtype; }
+        int getType() const { return rbtype; }
 
 		Vector3d getv() { return v; }
 		Vector3d getw() { return omega; }

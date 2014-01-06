@@ -74,6 +74,12 @@ class RBSystem{
         void drawSys();
 
         void takeTimestep(double t, double dt);
+        void takeFullStep(double t, double dt);
+        bool checkCollisions(double t, double dt);
+        void handleCollisions(double t, double dt);
+
+        void settryState(const StateVector &Y);
+        void acceptState();
 };
 
 

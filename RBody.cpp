@@ -70,7 +70,12 @@ void RBody::setParams(double m, double width, double height, double depth, int t
 
     shape->BuildPlane(p3, p2, p1, p0, c);
 
+    M = m;
     Minv = 0;
+    Ibody.set((height * height + depth * depth) * M * 1 / 12, 0, 0,
+            0, (height * height + depth * depth) * M * 1 / 12, 0,
+            0, 0, (height * height + depth * depth) * M * 1 / 12);
+    //cout << "Ibody: " << endl;
     Ibodyinv.set(0,0,0,0,0,0,0,0,0);
 
   } else {

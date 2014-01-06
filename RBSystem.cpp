@@ -110,18 +110,15 @@ void RBSystem::initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vec
 
 void XtoState(Vector3d &x, Quaternion &q, Vector3d &p, Vector3d &l, const StateVector X, const int rbi) {
     int i = rbi * 13;
-
     //X.print();
-
     x.set(X[i],X[i+1],X[i+2]);
+      //cout << "x: " << x << endl;
     q.set(X[i+3],X[i+4],X[i+5],X[i+6]);
+      //cout << "q: " << q << endl;
     p.set(X[i+7],X[i+8],X[i+9]);
-    l.set(X[i+19],X[i+11], X[i+12]);
-
-    //cout << "x: " << x << endl;
-    //cout << "q: " << q << endl;
-    //cout << "p: " << p << endl;
-    //cout << "l: " << l << endl;
+      //cout << "p: " << p << endl;
+    l.set(X[i+10],X[i+11], X[i+12]);
+      //cout << "l: " << l << endl;
 }
 
 void StatetoX(const Vector3d x, const Quaternion q, const Vector3d p, const Vector3d l, StateVector &X, const int rbi) {
@@ -140,6 +137,10 @@ void StatetoX(const Vector3d x, const Quaternion q, const Vector3d p, const Vect
     X[i+10] = l.x;
     X[i+11] = l.y;
     X[i+12] = l.z;
+
+    //cout << X[i+12] << endl;
+
+    //cout << "i+12: " << i + 12 <<endl;
 }
 
 StateVector dynamics(const StateVector &X, double t, double dt, const int nbodies, const RBody &rb, const Environment &Env) {
@@ -157,28 +158,40 @@ StateVector dynamics(const StateVector &X, double t, double dt, const int nbodie
     //X.print();
     //cout << endl;
 
+    //cout << rb.getrbi() << endl;
     XtoState(x, q, p, l, X, rb.getrbi());
 
+    //cout << "after XtoState" << endl;
     //cout << "x: " << x << endl;
     //cout << "q: " << q << endl;
     //cout << "p: " << p << endl;
     //cout << "l: " << l << endl;
 
     // calc velocity
-    V = p / rb.getM();
+    V = p * rb.getMinv();
     //cout << "M: " << rb.getM() << endl;
     //cout << "V: " << V << endl;
+
     // calc rate of change of q:
     r = q.normalize().rotation();
+    //cout << q << endl;
+    //cout << q.normalize() << endl;
+    //q.normalize().rotation().print();
+
+
+    //r.print();
     iinv = r * rb.getIbodyinv() * r.transpose();
+
 
     //cout << "iinv: \n";
     //iinv.print();
-
+    //cout << l << endl;
+    //cout << iinv * l << endl;
     w = iinv * l;
     wq.set(w);
     //cout << endl << "w: " << w << endl;
     //cout << endl << "wq: " << wq << endl;
+
 
     Q = 0.5 * wq * q;
     //cout << "Q: " << Q << endl;
@@ -205,13 +218,11 @@ StateVector dynamics(const StateVector &X, double t, double dt, const int nbodie
     T.set(0,0,0);
 
     StatetoX(V, Q, F, T, newXdot, rb.getrbi());
-
     return newXdot;
 }
 
-StateVector Euler(const StateVector &X, const StateVector &Xdot, double dt){
-
-  return X + dt * Xdot;
+StateVector Euler(const StateVector &X, const StateVector &Xdot, double dt) {
+    return X + dt * Xdot;
 }
 
 StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double dt, const int nbodies, const RBody &rb, const Environment &env) {
@@ -234,36 +245,42 @@ StateVector RK4(const StateVector &X, const StateVector &Xdot, double t, double 
     return X + ((K1 + (2 * K2) + (2 * K3) + K4) / 6.0);
 }
 
-void RBSystem::takeTimestep(double t, double dt) {
-    StateVector Xnew;
+void RBSystem::takeFullStep(double t, double dt) {
+    StateVector newX;
     Quaternion q;
     Vector3d x, p, l;
 
-    // compute the rate of change of state
     for(int i = 0; i < nbodies; i ++) {
         //if (rblist[i].getType() != 1) {
-            StatetoX(rblist[i].getX(), rblist[i].getQ(),
-                     rblist[i].getP(), rblist[i].getL(), Y, i);
-            //cout << "Y: \n" << endl;
-            //Y.print();
-            Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Env);
-
-            //cout << "Ydot AFTER FIRST DYNAMICS() line 282: " << endl;
-            //Ydot.print();./rb p
-
-
-            Xnew = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
-
-            //cout << "Xnew AFTER RK4() line 287: " << endl;
-            //Xnew.print();
-            //cout << endl;
-
-            XtoState(x, q, p, l, Xnew, i);
+            newX = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
+            XtoState(x, q, p, l, newX, i);
 
             rblist[i].setICs(x, q, p, l);
-            //cout << endl << endl << "rblist[" << i << "].print(): " << endl;
-            //rblist[i].print();
-            //cout << endl;
+        //}
+    }
+}
+
+void RBSystem::takeTimestep(double t, double dt) {
+    for(int i = 0; i < nbodies; i ++) {
+        //if (rblist[i].getType() != 1) {
+            StatetoX(rblist[i].getX(), rblist[i].getQ(), rblist[i].getP(), rblist[i].getL(), Y, i);
+
+            Ydot = dynamics(Y, t, dt, nbodies, rblist[i], Env);
+        //}
+    }
+}
+
+bool RBSystem::checkCollisions(double t, double dt) {
+    StateVector xeuler;
+    Quaternion q;
+    Vector3d x, p, l;
+
+    for(int i = 0; i < nbodies; i ++) {
+        //if (rblist[i].getType() != 1) {
+            xeuler = Euler(Y, Ydot, dt);
+            XtoState(x, q, p, l, xeuler, i);
+
+            rblist[i].setICs(x, q, p, l);
         //}
     }
 
@@ -282,6 +299,86 @@ void RBSystem::takeTimestep(double t, double dt) {
     allcontacts.print();
     //cout << endl;
     //printsys();
+
+    if(allcontacts.ncontacts > 0)
+        return true;
+    else
+        return false;
+}
+
+void RBSystem::handleCollisions(double t, double dt) {
+    Quaternion dq, q;
+    Vector3d dx, x, dp, p, dl, l;
+    Vector3d ptang, pnorm;
+    double dpt, pt, dxn, d, fc;
+    StateVector Xc, Xnew;
+    Vector3d fj;
+
+    Contact *collided = allcontacts.First();
+
+    while(collided != NULL) {
+        // find the tangent and normal to collision surface...
+        pnorm = (collided->n * collided->p) * collided->p;
+        ptang = collided->p - pnorm;
+
+        // variables before collision...
+        XtoState(x, q, p, l, Y, collided->a->rbi);
+
+        // variables after collission, assuming that checkCollisions() really stored them into the rblist
+        dx = collided->a->getX();
+        dq = collided->a->getQ();
+        dp = collided->a->getP();
+        dl = collided->a->getL();
+
+        cout << "x: " << x << ", dx: " << dx << endl;
+        cout << "q: " << q << ", dq: " << dq << endl;
+        cout << "p: " << p << ", dp: " << dp << endl;
+        cout << "l: " << l << ", dl: " << dl << endl;
+
+        dpt = dp * ptang;
+        pt = p * ptang;
+        dxn = dx * pnorm;
+        d = (x - collided->p) * pnorm;
+
+        cout << "pt: " << pt << ", dpt: " << dpt << endl;
+        cout << "d: " << d << ", dxn: " << dxn << endl;
+
+        fc = -d / dxn;
+        cout << "time ratio: " << fc << endl;
+
+        // calculate impulse and apply...
+        fj = collided->impulse() * collided->n;
+
+        // get collision or stop; use euler
+        Xc = Euler(Y, Ydot, fc * dt);       //critical point
+
+        if(collided->a->rbtype != 1) {
+            XtoState(x, q, p, l, Xc, collided->a->rbi);
+            collided->a->setICs(x, q, p+fj, l+(collided->a->r(collided->p) % fj));
+            StatetoX(collided->a->getX(), collided->a->getQ(), collided->a->getP(), collided->a->getL(), Ydot, collided->a->rbi);
+        }
+
+
+        if(collided->b->rbtype != 1) {
+            XtoState(x, q, p, l, Xc, collided->b->rbi);
+            collided->b->setICs(x, q, p-fj, l+(collided->b->r(collided->p) %fj));
+            StatetoX(collided->b->getX(), collided->b->getQ(), collided->b->getP(), collided->b->getL(), Ydot, collided->b->rbi);
+        }
+
+        // finish off timestep...?
+        Xnew = Euler(Y, Ydot, (1 - fc) * dt);
+
+        XtoState(x, q, p, l, Xnew, collided->a->rbi);
+        collided->a->setICs(x, q, p, l);
+
+        XtoState(x, q, p, l, Xnew, collided->b->rbi);
+        collided->b->setICs(x, q, p, l);
+
+        collided = allcontacts.Next();
+    }
+
+    allcontacts.Clear();
+    // time to event: resting slide-to-stop time fraction
 }
 
 void RBSystem::drawSys(){

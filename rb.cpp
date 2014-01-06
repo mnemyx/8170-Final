@@ -64,7 +64,7 @@ const int NUMBODIES = 3;
 
 const int TimerDelay = 100; // 1/10 second delay between time steps
 
-const double dt = .5;
+const double dt = .01;
 static double t;
 
 static bool Stopped;
@@ -240,13 +240,22 @@ void handleTimeStep(int n){
 
     RBSys->takeTimestep(t, dt);
 
+    drawScreen();
+    glutPostRedisplay();		// make sure it gets displayed
+
+    if(RBSys->checkCollisions(t, dt)) {
+      // time to the event: resting slide-to-stop time fraction, !resting collision
+        RBSys->handleCollisions(t,dt);
+    } else {
+        RBSys->takeFullStep(t, dt);
+    }
+
     //cout << "taking time step" << endl;
     //RBSys->printsys(); cout << endl;
 
     t += dt;
 
-    drawScreen();
-    glutPostRedisplay();		// make sure it gets displayed
+
 
     if(Step){
         Stopped = true;
