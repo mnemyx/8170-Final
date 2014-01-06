@@ -265,6 +265,12 @@ void RBSystem::takeFullStep(double t, double dt) {
             newX = RK4(Y, Ydot, t, dt, nbodies, rblist[i], Env);
             XtoState(x, q, p, l, newX, i);
 
+            //cout << "x: " << x << endl;
+            //cout << "q: " << q << endl;
+            //cout << "p: " << p << endl;
+            //cout << "l: " << l << endl;
+
+
             rblist[i].setICs(x, q, p, l);
         //}
     }
