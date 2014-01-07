@@ -292,6 +292,58 @@ void RBSystem::takeTimestep(double t, double dt) {
     }
 }
 
+bool RBSystem::recurseCheck(double dt, StateVector Y, StateVector Ydot, double &fc, int step) {
+    StateVector xeuler;
+    Quaternion q;
+    Vector3d x, p, l;
+
+    cout << "step: " << step << endl;
+
+    for(int i = 0; i < nbodies; i ++) {
+        //if (rblist[i].getType() != 1) {
+        //Y.print();
+        //cout << "^^^^^^" << endl;
+        //Ydot.print();
+            xeuler = Euler(Y, Ydot, dt);
+            XtoState(x, q, p, l, xeuler, i);
+
+            //cout << "xeuler: " << endl;
+            //xeuler.print();
+            //cout << endl;
+            rblist[i].setICs(x, q, p, l);
+        //}
+    }
+
+
+    xextents.UpdateExtents();
+    //xextents.print();
+    yextents.UpdateExtents();
+    //yextents.print();
+    zextents.UpdateExtents();
+    //zextents.print();
+
+    alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
+    alloverlaps.FindWitnesses();
+    //alloverlaps.print();
+
+    allcontacts.ExtractContacts(alloverlaps);
+    //allcontacts.print();
+    //cout << endl;
+    //printsys();
+
+    if(allcontacts.ncontacts > 0) {
+        if(step == 0) {
+            fc = dt;
+            return true;
+        } else {
+            step--;
+            recurseCheck(dt/2, Y, Ydot, fc, step);
+        }
+    } else {
+        return false;
+    }
+}
+
 bool RBSystem::checkCollisions(double t, double dt) {
     StateVector xeuler;
     Quaternion q;
@@ -334,102 +386,117 @@ bool RBSystem::checkCollisions(double t, double dt) {
         return false;
 }
 
-void RBSystem::handleCollisions(double t, double dt) {
+bool RBSystem::calcImpulse(Contact *collided, double &j, Vector3d &ra, Vector3d &rb) {
+    /***** based on siggraph notes *******/
+    Vector3d padot = collided->a->dpdt(collided->p);
+    Vector3d pbdot = collided->b->dpdt(collided->p);
+    Vector3d nt0 = collided->n;
+    ra = collided->p - collided->a->shape->GetCenter();
+    rb = collided->p - collided->a->shape->GetCenter();
+
+    double vrel = nt0 * (padot - pbdot);
+    double numerator = -(1 + .8) * vrel;
+
+    double term1 = collided->a->getMinv();
+    double term2 = collided->b->getMinv();
+    double term3 = nt0 * ((collided->a->getIinv() * (ra % nt0)) % ra);
+    double term4 = nt0 * ((collided->b->getIinv() * (rb % nt0)) % rb);
+
+    j = numerator / (term1 + term2 + term3 + term4);
+
+    if (j < 0) return true;
+    else return false;
+}
+
+void RBSystem::handleCollisions(double &t, double dt) {
     Quaternion dq, q;
     Vector3d dx, x, dp, p, dl, l;
     Vector3d ptang, pnorm;
     double dpt, pt, dxn, d, fc;
     StateVector Xc, Xnew(nbodies * STATE_SIZE);
-    Vector3d fj;
-    Contact *collided = allcontacts.First();
+    Vector3d fj,ra,rb;
+    double j;
+    bool loopList = false;
+    Contact *collided = NULL;
 
-    while(collided != NULL) {
-        // find the tangent and normal components to collision surface...
-        pnorm = (collided->n * collided->p) * collided->p;
-        cout << "pnorm: " << pnorm << endl;
-        //pnorm = collided->n.normalize();
-        ptang = collided->p - pnorm;
 
-        //Y.print();
-        // variables before collision...
-        XtoState(x, q, p, l, Y, collided->a->rbi);
+    //do{
+        collided = allcontacts.First();
 
-        // variables after collission, assuming that checkCollisions() really stored them into the rblist
-        dx = collided->a->getX();
-        dq = collided->a->getQ();
-        dp = collided->a->getP();
-        dl = collided->a->getL();
+        while(collided != NULL) {
+            // find the tangent and normal components to collision surface...
+            pnorm = (collided->n * collided->p) * collided->p;
+            //cout << "pnorm: " << pnorm << endl;
+            //pnorm = collided->n.normalize();
+            ptang = collided->p - pnorm;
 
-        //cout << "x: " << x << ", dx: " << dx << endl;
-        //cout << "q: " << q << ", dq: " << dq << endl;
-        //cout << "p: " << p << ", dp: " << dp << endl;
-        //cout << "l: " << l << ", dl: " << dl << endl;
+            //Y.print();
+            // variables before collision...
+            XtoState(x, q, p, l, Y, collided->a->rbi);
 
-        dpt = dp * ptang;
-        pt = p * ptang;
-        dxn = dx * pnorm;
-        d = (x - collided->p) * pnorm;
+            // variables after collission, assuming that checkCollisions() really stored them into the rblist
+            dx = collided->a->getX();
+            dq = collided->a->getQ();
+            dp = collided->a->getP();
+            dl = collided->a->getL();
 
-        //cout << "pt: " << pt << ", dpt: " << dpt << endl;
-        cout << "d: " << d << ", dxn: " << dxn << endl;
+            //cout << "x: " << x << ", dx: " << dx << endl;
+            //cout << "q: " << q << ", dq: " << dq << endl;
+            //cout << "p: " << p << ", dp: " << dp << endl;
+            //cout << "l: " << l << ", dl: " << dl << endl;
 
-        fc = -d / dxn;
-        cout << "time ratio: " << fc << endl;
+            dpt = dp * ptang;
+            pt = p * ptang;
+            dxn = dx * pnorm;
+            d = ((x) - collided->p) * pnorm;
 
-        /***** based on siggraph notes *******/
-        Vector3d padot = collided->a->dpdt(collided->p);
-        Vector3d pbdot = collided->b->dpdt(collided->p);
-        Vector3d nt0 = collided->n;
-        Vector3d ra = collided->p - collided->a->shape->GetCenter();
-        Vector3d rb = collided->p - collided->a->shape->GetCenter();
+            //cout << "pt: " << pt << ", dpt: " << dpt << endl;
+            cout << "d: " << d << ", dxn: " << dxn << endl;
 
-        double vrel = nt0 * (padot - pbdot);
-        double numerator = -(1 + .8) * vrel;
+            fc = -d / dxn;
+            cout << "time ratio: " << fc << endl;
 
-        double term1 = collided->a->getMinv();
-        double term2 = collided->b->getMinv();
-        double term3 = nt0 * ((collided->a->getIinv() * (ra % nt0)) % ra);
-        double term4 = nt0 * ((collided->b->getIinv() * (rb % nt0)) % rb);
+            //recurseCheck(dt, Y, Ydot, fc, 5);
+            //cout << "fc: " << fc << endl;
 
-        double j = numerator / (term1 + term2 + term3 + term4);
+            // solve for impulse
+            loopList = calcImpulse(collided, j, ra, rb);
 
-        fj = j * nt0;
+            cout << "j: " << j << endl;
+            fj = j * collided->n;
 
-        /***** PREVIOUS BASED ON HOUSE'S ******/
-        // calculate impulse and apply...
-        //fj = collided->impulse() * collided->n;
+            // get collision or stop; use euler
+            Xc = Euler(Y, Ydot, fc * dt);       //critical point
+            //cout << "Xc: " << endl;
+            Xc.print();
+            //cout << endl;
 
-        // get collision or stop; use euler
-        Xc = Euler(Y, Ydot, fc * dt);       //critical point
-        //cout << "Xc: " << endl;
-        Xc.print();
-        //cout << endl;
+            //if(collided->a->rbtype != 1) {
+                XtoState(x, q, p, l, Xc, collided->a->rbi);
+                collided->a->setICs(x, q, (p)+fj, (l)+(ra % fj));
+                StatetoX(collided->a->getX(), collided->a->getQ(), collided->a->getP(), collided->a->getL(), Y, collided->a->rbi);
+            //}
 
-        //if(collided->a->rbtype != 1) {
-            XtoState(x, q, p, l, Xc, collided->a->rbi);
-            collided->a->setICs(x, q, (p)+fj, (l)+(ra % fj));
-            StatetoX(collided->a->getX(), collided->a->getQ(), collided->a->getP(), collided->a->getL(), Y, collided->a->rbi);
-        //}
+            //if(collided->b->rbtype != 1) {
+                XtoState(x, q, p, l, Xc, collided->b->rbi);
+                collided->b->setICs(x, q, (p)-fj, (l)-(rb % fj));
+                StatetoX(collided->b->getX(), collided->b->getQ(), collided->b->getP(), collided->b->getL(), Y, collided->b->rbi);
+            //}
 
-        //if(collided->b->rbtype != 1) {
-            XtoState(x, q, p, l, Xc, collided->b->rbi);
-            collided->b->setICs(x, q, (p)-fj, (l)-(rb % fj));
-            StatetoX(collided->b->getX(), collided->b->getQ(), collided->b->getP(), collided->b->getL(), Y, collided->b->rbi);
-        //}
+            // finish off timestep...?
+            Xnew = Euler(Y, Ydot, ((1 - fc) * dt));
 
-        // finish off timestep...?
-        Xnew = Euler(Y, Ydot, (1 - fc) * dt);
+            XtoState(x, q, p, l, Xnew, collided->a->rbi);
+            collided->a->setICs(x, q, p, l);
 
-        XtoState(x, q, p, l, Xnew, collided->a->rbi);
-        collided->a->setICs(x, q, p, l);
+            XtoState(x, q, p, l, Xnew, collided->b->rbi);
+            collided->b->setICs(x, q, p, l);
 
-        XtoState(x, q, p, l, Xnew, collided->b->rbi);
-        collided->b->setICs(x, q, p, l);
+            //cout << "Xnew: "<<endl; Xnew.print();
 
-        //cout << "Xnew: "<<endl; Xnew.print();
-
-        collided = allcontacts.Next();
-    }
+            collided = allcontacts.Next();
+        }
+    //}while(loopList);
 
     //allcontacts.Clear();
     // time to event: resting slide-to-stop time fraction

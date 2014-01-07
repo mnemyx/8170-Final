@@ -76,7 +76,9 @@ class RBSystem{
         void takeTimestep(double t, double dt);
         void takeFullStep(double t, double dt);
         bool checkCollisions(double t, double dt);
-        void handleCollisions(double t, double dt);
+        void handleCollisions(double &t, double dt);
+        bool recurseCheck(double dt, StateVector Y, StateVector Ydot, double &fc, int step);
+        bool calcImpulse(Contact *collided, double &j, Vector3d &ra, Vector3d &rb);
 
         void settryState(const StateVector &Y);
         void acceptState();

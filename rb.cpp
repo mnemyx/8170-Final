@@ -64,7 +64,7 @@ const int NUMBODIES = 3;
 
 const int TimerDelay = 100; // 1/10 second delay between time steps
 
-const double dt = .01;
+const double dt = .001;
 static double t;
 
 static bool Stopped;
