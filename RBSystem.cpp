@@ -266,6 +266,8 @@ void RBSystem::takeFullStep(double t, double dt) {
             rblist[i].setICs(x, q, p, l);
         //}
     }
+    cout << "full time step: " << endl;
+    printsys();
 }
 
 void RBSystem::takeTimestep(double t, double dt) {
@@ -290,6 +292,8 @@ void RBSystem::takeTimestep(double t, double dt) {
             //cout << endl;
         //}
     }
+    cout << "before calculations: " << endl;
+    printsys();
 }
 
 bool RBSystem::recurseCheck(double dt, StateVector Y, StateVector Ydot, double &fc, int step) {

@@ -21,21 +21,21 @@ using namespace std;
 const int WIDTH = 800;    // initial window dimensions
 const int HEIGHT = 600;
 
+const int DRAWWIDTH = 40;
+const int DRAWHEIGHT = 30;
+
 const int NEAR = 10;
 const int FAR = 1000;
-const int DEPTH = -500;
+const int DEPTH = -100;
 
 const int NONE = -1;
 
 const double ROTFACTOR = 0.2;
 const double XLATEFACTOR = 0.5;
 
-const int DRAWWIDTH = 640;
-const int DRAWHEIGHT = 480;
-
 const double AMBIENT_FRACTION = 0.1;
-const double DIFFUSE_FRACTION = 0.2;
-const double SPECULAR_FRACTION = 0.2;
+const double DIFFUSE_FRACTION = 0.1;
+const double SPECULAR_FRACTION = 0.05;
 
 static double Pan;
 static double Tilt;
@@ -62,9 +62,9 @@ const float BRIGHT_PALEBLUE[] = {0.5, 0.5, 1, 1};
 
 const int NUMBODIES = 3;
 
-const int TimerDelay = 100; // 1/10 second delay between time steps
+const int TimerDelay = 1; 
 
-const double dt = .001;
+const double dt = .01;
 static double t;
 
 static bool Stopped;
@@ -160,15 +160,15 @@ void Initialize(char *file){
 }
 
 //
-// Display Callback Routine: clear the screen and draw the cat
+// Display Callback Routine: clear the screen
 //
 void drawScreen(){
+  glEnable(GL_DEPTH_TEST);
+  
   const float light_position1[] = {1, 1, 1, 1};
-  const float light_position2[] = {1, 1, 1, 1};
-
+	
   // clear the window to the background color
-  glClear(GL_COLOR_BUFFER_BIT);
-  glClear(GL_DEPTH_BUFFER_BIT);  // solid - clear depth buffer
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // solid - clear depth buffer
   // establish shading model, flat or smooth
   glShadeModel(GL_SMOOTH);
 
@@ -179,14 +179,8 @@ void drawScreen(){
   glLightfv(GL_LIGHT0, GL_DIFFUSE, WHITE);
   glLightfv(GL_LIGHT0, GL_SPECULAR, WHITE);
 
-  glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
-  glLightfv(GL_LIGHT1, GL_AMBIENT, WHITE);
-  glLightfv(GL_LIGHT1, GL_DIFFUSE, WHITE);
-  glLightfv(GL_LIGHT1, GL_SPECULAR, WHITE);
-
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
-  //glEnable(GL_LIGHT1);
 
   // establish camera coordinates
   glRotatef(Tilt, 1, 0, 0);	    // tilt - rotate camera about x axis
@@ -196,39 +190,11 @@ void drawScreen(){
   // rotate the model
   glRotatef(ThetaY, 0, 1, 0);       // rotate model about x axis
   glRotatef(ThetaX, 1, 0, 0);       // rotate model about y axis
-
+  
   // draw the rigid bodies
   RBSys->drawSys();
-  //Cube.drawbody();
+  
   glutSwapBuffers();
-}
-
-void getShading() {
-    float ambient_color[4];
-    float diffuse_color[4];
-    float specular_color[4];
-    int shininess;
-
-
-    // set up material colors to current hue.
-    for(int i = 0; i < 3; i++)
-      ambient_color[i] = diffuse_color[i] = specular_color[i] = 0;
-
-    ambient_color[3] = diffuse_color[3] = specular_color[3] = 1;
-    shininess = 1;
-
-
-    for(int i = 0; i < 3; i++){
-      ambient_color[i] = AMBIENT_FRACTION * BRIGHT_PALEBLUE[i];
-      diffuse_color[i] = DIFFUSE_FRACTION * BRIGHT_PALEBLUE[i];
-      specular_color[i] = SPECULAR_FRACTION * WHITE[i];
-      shininess = 60;
-    }
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_color);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_color);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
-    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }
 
 //
@@ -268,9 +234,11 @@ void handleTimeStep(int n){
 
 // Init Camera
  void InitCamera() {
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  
   glDisable(GL_LIGHTING);
-  glEnable(GL_DEPTH_TEST);
-  //glDisable(GL_BLEND);
+  glDisable(GL_DEPTH_TEST);
 
   Pan = 0;
   Tilt = 0;
@@ -425,7 +393,7 @@ int main(int argc, char* argv[]){
   glutInit(&argc, argv);
 
   // create the graphics window, giving width, height, and title text
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
   glutInitWindowSize(WIDTH, HEIGHT);
   glutCreateWindow("Rigid Body Simulation");
 
@@ -450,7 +418,7 @@ int main(int argc, char* argv[]){
   glutTimerFunc(TimerDelay, handleTimeStep, 0);
 
   // specify window clear (background) color to be black
-  glClearColor(0, 0, 0, 1);
+  glClearColor(.9, .9, .9, 1);
 
   glutMainLoop();
   return 0;

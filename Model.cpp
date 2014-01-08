@@ -137,24 +137,23 @@ void Model::BuildCuboid(float width, float height, float depth, double x, double
 		   1, 7, 5,     1, 3, 7,    // right
 		   0, 1, 4,     1, 5, 4,    // bottom
 		   2, 7, 3,     2, 6, 7};   // top
-
+		   
   // delete any old data that may have been built previously
   Clean();
-
-  Center.set(x,y,z);
+  
   // construct the 8 vertices for the cubeoid.
   i = 0;
   for(ksign = -1; ksign <= 1; ksign += 2)
     for(jsign = -1; jsign <= 1; jsign += 2)
       for(isign = -1; isign <= 1; isign += 2){
-        vector.set(isign * width / 2, jsign * height / 2, ksign * depth / 2);
-        v[i++] = AddVertex(vector + Center);
+	vector.set(isign * width / 2, jsign * height / 2, ksign * depth / 2);
+	v[i++] = AddVertex(vector);
       }
-
+	
   // construct the 12 triangles that make the 6 faces
   for(i = 0; i < 36; i += 3)
     AddTriangle(v[vlist[i]], v[vlist[i + 1]], v[vlist[i + 2]]);
-
+    
   CopyToOVert();
   CopyToONorm();
 }
@@ -428,6 +427,28 @@ void Model::BuildCircle(float radius, int orientation, double x, double y, doubl
   }
 }
 
+void Model::GetShading(Vector4d color){
+	float ambient_color[4];
+    float diffuse_color[4];
+    float specular_color[4];
+    int shininess;
+    
+    Vector4d white(1,1,1,1);
+    
+    for(int i = 0; i < 3; i++){
+      ambient_color[i] = .4 * color[i];
+      diffuse_color[i] = .2 * white[i];
+      specular_color[i] = .4 * color[i];
+      shininess = 6;
+    }
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient_color);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse_color);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular_color);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
+}
+
+
 
 //
 // Draw the current model in wireframe or shaded
@@ -435,14 +456,14 @@ void Model::BuildCircle(float radius, int orientation, double x, double y, doubl
 void Model::Draw(int wireframe){
   int itri, ivertex;
   int op = (wireframe? GL_LINE_LOOP: GL_POLYGON);
-
+  
   for(itri = 0; itri < ntriangles; itri++){
     glBegin(op);
       if(!wireframe)
-        glNormal3f(normals[itri].x, normals[itri].y, normals[itri].z);
+	glNormal3f(normals[itri].x, normals[itri].y, normals[itri].z);
       for(int i = 0; i < 3; i++){
-        ivertex = triangles[itri][i];
-        glVertex3f(vertices[ivertex].x, vertices[ivertex].y, vertices[ivertex].z);
+	ivertex = triangles[itri][i];
+	glVertex3f(vertices[ivertex].x, vertices[ivertex].y, vertices[ivertex].z);
       }
     glEnd();
   }
@@ -453,12 +474,13 @@ void Model::Draw(int wireframe){
 //
 void Model::Draw(Vector4d color){
   int itri, ivertex;
-
-  glColor4f(color[0], color[1], color[2], color[3]);
+  
+  GetShading(color);
+  
   for(itri = 0; itri < ntriangles; itri++){
-    glBegin(GL_TRIANGLES);
+    glBegin(GL_POLYGON);
 
-	glNormal3f(normals[itri].x, normals[itri].y, normals[itri].z);
+	  glNormal3f(normals[itri].x, normals[itri].y, normals[itri].z);
 
       for(int i = 0; i < 3; i++){
 		ivertex = triangles[itri][i];
@@ -475,7 +497,6 @@ void Model::Draw(const float* frontC, const float* backC){
   int itri, ivertex, i;
 
   glColor4f(backC[0], backC[1], backC[2], backC[3]);
-  //glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   for(itri = 0; itri < ntriangles; itri++){
 
 	glBegin(GL_TRIANGLES);
@@ -491,7 +512,6 @@ void Model::Draw(const float* frontC, const float* backC){
   }
 
   glColor4f(frontC[0], frontC[1], frontC[2], backC[3]);
-  //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   for(itri = 0; itri < ntriangles; itri++){
 	glBegin(GL_TRIANGLES);
 
