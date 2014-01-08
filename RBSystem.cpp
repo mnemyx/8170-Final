@@ -201,9 +201,9 @@ StateVector dynamics(const StateVector &X, double t, double dt, const int nbodie
     //fg = rb.getM() * Env.G;
 
     if (Env.W.x == 0 && Env.W.y == 0 && Env.W.z == 0)
-        fg = (Env.G - Env.Vis * V) * rb.getM();
+        fg = (Env.G - Env.Vis * V) * rb.getMinv();
     else
-        fg = (Env.G + Env.Vis * (Env.W - V)) * rb.getM();
+        fg = (Env.G + Env.Vis * (Env.W - V)) * rb.getMinv();
 
     F = fg;// + fs + fd;
     //if(t <= 5) {
