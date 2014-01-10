@@ -106,6 +106,9 @@ class RBody {
         Vector3d r(const Vector3d &p);      // vector from COM to p
         Vector3d dpdt(const Vector3d &p);   // velocity of point p
         double invInertia(const Vector3d &r, const Vector3d &n);
+        int getnedges() { return shape-> GetNedges(); }
+        Vector3d getedge(int indx) { return shape->GetEdge(indx); }
+        Vector3d getedgep(int indx) { return shape->GetEdgeP(indx); }
 };
 
 #endif

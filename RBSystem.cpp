@@ -19,11 +19,11 @@ Matrix3x3 star(const Vector3d &omega) {
 RBSystem::RBSystem(int nbods) {
     nbodies = nbods;
     rblist = new RBody[nbodies];
-    trylist = new RBody[nbodies];
+    //trylist = new RBody[nbodies];
 
     for(int i = 0; i < nbodies; i++) {
         rblist[i].setRBI(i);
-        trylist[i].setRBI(i);
+        //trylist[i].setRBI(i);
     }
 
     Y.setSize(nbodies * STATE_SIZE);
@@ -46,7 +46,7 @@ RBSystem::RBSystem(int nbods) {
 
 RBSystem::~RBSystem() {
     delete []rblist;
-    delete []trylist;
+    //delete []trylist;
 }
 
 void RBSystem::setParams(double m[], double width[], double height[], double depth[], int type[], double d1[], double d2[], double d3[], Vector4d c[]) {
@@ -58,8 +58,8 @@ void RBSystem::setParams(double m[], double width[], double height[], double dep
         rblist[i].setParams(m[i], width[i], height[i], depth[i], type[i], d1[i], d2[i], d3[i]);
         rblist[i].setColor(c[i]);
 
-        trylist[i].setParams(m[i], width[i], height[i], depth[i], type[i], d1[i], d2[i], d3[i]);
-        trylist[i].setColor(c[i]);
+        //trylist[i].setParams(m[i], width[i], height[i], depth[i], type[i], d1[i], d2[i], d3[i]);
+        //trylist[i].setColor(c[i]);
     }
 }
 
@@ -78,7 +78,7 @@ void RBSystem::initializeState(Vector3d x0[], Quaternion q[], Vector3d v0[], Vec
         rblist[i].initICs(x0[i], q[i], v0[i], omega0[i]);
         //rblist[i].ComputeAuxiliaries();
 
-        trylist[i].initICs(x0[i], q[i], v0[i], omega0[i]);
+        //trylist[i].initICs(x0[i], q[i], v0[i], omega0[i]);
         //trylist[i].ComputeAuxiliaries();
         //rblist[i].print();
 

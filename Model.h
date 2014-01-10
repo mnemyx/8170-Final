@@ -39,9 +39,12 @@ protected:
   int triangles[MAXTRIANGLES][3];   // 3 vertex indices for each triangle
   Vector3d normals[MAXTRIANGLES];   // unit normal vector for each triangle
   int ntriangles;		    // count of the number of triangles
-  Vector3d overtices[MAXVERTICES];       // original vertex coordinates
-  Vector3d onormals[MAXTRIANGLES];       // original normals for each triangle
-  Plane planes[MAXTRIANGLES];             // only meant to be used with planes/cuboids
+  //Vector3d overtices[MAXVERTICES];       // original vertex coordinates
+  //Vector3d onormals[MAXTRIANGLES];       // original normals for each triangle
+  Plane planes[MAXTRIANGLES/2];             // only meant to be used with planes/cuboids
+  int edges[12][2];
+  int nedges;
+  int nplanes;
 
   Vector3d Center;          // center of mass...
 
@@ -50,8 +53,8 @@ protected:
   int AddVertex(const Vector3d &v); // insert a simple vertex into vertex table
   int AddTriangle(int v0, int v1, int v2);  // insert a triangle, and its normal
 
-  void CopyToOVert();
-  void CopyToONorm();
+  //void CopyToOVert();
+  //void CopyToONorm();
 
   void ComputeAABB();
 
@@ -94,6 +97,9 @@ public:
   int GetNtriangles();
   Vector3d GetNormal(int indx);
   Vector3d GetCenter() { return Center; }
+  int GetNedges() { return nedges; }
+  Vector3d GetEdge(int indx) { return edges[indx][1] - edges[indx][0]; }
+  Vector3d GetEdgeP(int indx) { return edges[indx][0]; }
 
   void place_in_world(const Vector3d &x, const Matrix3x3 &R);
   void print();

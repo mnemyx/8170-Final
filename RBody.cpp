@@ -56,6 +56,7 @@ void RBody::setParams(double m, double width, double height, double depth, int t
 
     c.set(d1, d2, d3);
 
+
     p0.set(-width/2, height/2, -depth/2);
     p0 = p0 + c;
 
@@ -70,6 +71,8 @@ void RBody::setParams(double m, double width, double height, double depth, int t
 
     shape->BuildPlane(p3, p2, p1, p0, c);
 
+    //shape->BuildCuboid(width, height, depth, d1, d2, d3);
+
     M = m;
     Minv = 0;
     Ibody.set((height * height + depth * depth) * M * 1 / 12, 0, 0,
@@ -79,6 +82,7 @@ void RBody::setParams(double m, double width, double height, double depth, int t
     Ibodyinv.set(0,0,0,0,0,0,0,0,0);
 
   } else {
+  //cout << "building...cuboid..." << endl;
     shape->BuildCuboid(width, height, depth, d1, d2, d3);
     //cout << "m: " << m << endl;
     a_ainv(m, M, Minv);
@@ -177,17 +181,19 @@ int RBody::checkWitnessPlane(const Plane &witnessplane) const{
     Vector3d vtx;
 //cout << "checkWitnessPlane(): "; witnessplane.print(); cout << endl;
     haveon = false;
+    int vcount = 0;
     for(vtx = shape->FirstV(done); !done; vtx = shape->NextV(done)) {
         //cout << "vtx: " << vtx << endl;
+        cout << "rbi: " << rbi << "; vcount: " << vcount++ << endl;
         region = witnessplane.region(vtx);
 
-        //cout << "region " << ((region== BELOW)? "BELOW": (region == ON)? "ON": "ABOVE") << ", ";
+        cout << "region " << ((region== BELOW)? "BELOW": (region == ON)? "ON": "ABOVE") << endl;
         if(region == BELOW)
             return BELOW;
         else if(region == ON)
             haveon = true;
     }
-
+cout << "DONE!" <<endl <<endl;
     if(haveon)
         return ON;
     else
@@ -222,13 +228,14 @@ Witness RBody::findWitness(RBody *rb, int swapping){
     Witness witness;
     bool done;
 
+    /***
     // a=Plane or a=Prism/b=Plane or b=Prism: First check each plane of b
     // to see if it is a witness
     for(idx = 0, witnessplane = rb->shape->FirstP(done); !done;
     idx++, witnessplane = rb->shape->NextP(done)){
     //cout << "witnessplane: "; witnessplane.print(); cout << endl;
         region = checkWitnessPlane(witnessplane);
-        //cout << "region: " << region << endl;
+        cout << "region: " << region << endl;
         if(region != BELOW) break;
     }
 
@@ -240,6 +247,42 @@ Witness RBody::findWitness(RBody *rb, int swapping){
     }
     else    // either this is a witness or we have checked everything in vain
         witness.set(witnessplane, idx, region, this, rb);
+    **/
+
+    // based on notes: search for all faces of a for a witness
+    for(idx = 0, witnessplane = rb->shape->FirstP(done); !done;
+        idx++, witnessplane = rb->shape->NextP(done)) {
+        cout << "checking against planes of rbi: " << rb->rbi << "; idx: " << idx << endl;
+        region = checkWitnessPlane(witnessplane);
+        if(region != BELOW) break;
+        // the above meant we found a witness plane in a.
+    }
+
+    if(region == BELOW && !swapping) {
+        swapping = 1;
+        cout << endl <<  endl << "WE COULDNT FIND ANYTHING IN A " << endl;
+        witness = rb->findWitness(this, swapping);
+        // above says we're swapping....so it's in b
+    } else if (region == BELOW && swapping) {
+        Vector3d edgen;
+        Vector3d edgep;
+        cout << endl << endl << "WE COULDNT FIND ANYTHING IN A OR B " << endl;
+        for(int i = 0; i < rb->getnedges(); i++) {
+            for(int j = 0; j < this->getnedges(); j++) {
+                edgen = (rb->getedge(i) % this->getedge(j)).normalize();
+                edgep = rb->getedgep(j);
+
+                witnessplane.set(edgep, edgen);
+
+                region = checkWitnessPlane(witnessplane);
+
+                if(region != BELOW) break;
+            }
+        }
+        witness.set(witnessplane, 0, region, this, rb);
+    } else {
+        witness.set(witnessplane, idx, region, this, rb);
+    }
 
   return witness;
 }

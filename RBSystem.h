@@ -36,7 +36,7 @@ class RBSystem{
         int nbodies;
 
         RBody *rblist;
-        RBody *trylist;
+        //RBody *trylist;
 
         StateVector Y;
         StateVector Ydot;

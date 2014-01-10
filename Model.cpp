@@ -34,6 +34,7 @@ Model::Model(){
   Clean();
 }
 
+/**
 void Model::CopyToOVert() {
     for(int i = 0; i < nvertices; i++)
         overtices[i].set(vertices[i]);
@@ -42,7 +43,7 @@ void Model::CopyToOVert() {
 void Model::CopyToONorm() {
     for(int i = 0; i < ntriangles; i++)
         onormals[i].set(normals[i]);
-}
+}**/
 
 void Model::ComputeAABB() {
     left = right = vertices[0].x;
@@ -77,7 +78,7 @@ int Model::AddVertex(const Vector3d &v){
   }
 
   vertices[nvertices] = v;
-  overtices[nvertices] = v;
+  //overtices[nvertices] = v;
 
   return nvertices++;
 }
@@ -109,10 +110,10 @@ int Model::AddTriangle(int v0, int v1, int v2){
   Vector nullv(0,0,0);
   if ((V01 % V02).norm() == 0) {
 	  normals[ntriangles].set(nullv);
-	  onormals[ntriangles].set(nullv);
+	  //onormals[ntriangles].set(nullv);
   } else {
 	normals[ntriangles] = (V01 % V02).normalize();
-	onormals[ntriangles] = (V01 % V02).normalize();
+	//onormals[ntriangles] = (V01 % V02).normalize();
   }
 
   //cout << "normal for triangle: " << ntriangles << " --- ";
@@ -137,10 +138,12 @@ void Model::BuildCuboid(float width, float height, float depth, double x, double
 		   1, 7, 5,     1, 3, 7,    // right
 		   0, 1, 4,     1, 5, 4,    // bottom
 		   2, 7, 3,     2, 6, 7};   // top
-		   
+
   // delete any old data that may have been built previously
   Clean();
-  
+  nedges = 12;
+  nplanes = 6;
+
   // construct the 8 vertices for the cubeoid.
   i = 0;
   for(ksign = -1; ksign <= 1; ksign += 2)
@@ -149,13 +152,27 @@ void Model::BuildCuboid(float width, float height, float depth, double x, double
 	vector.set(isign * width / 2, jsign * height / 2, ksign * depth / 2);
 	v[i++] = AddVertex(vector);
       }
-	
+
   // construct the 12 triangles that make the 6 faces
   for(i = 0; i < 36; i += 3)
     AddTriangle(v[vlist[i]], v[vlist[i + 1]], v[vlist[i + 2]]);
-    
-  CopyToOVert();
-  CopyToONorm();
+
+  // add edges
+  edges[0][0] = 0; edges[0][1] = 1;
+  edges[1][0] = 1; edges[1][1] = 3;
+  edges[2][0] = 3; edges[2][1] = 2;
+  edges[3][0] = 2; edges[3][1] = 0;
+
+  edges[4][0] = 4; edges[4][1] = 5;
+  edges[5][0] = 5; edges[5][1] = 7;
+  edges[6][0] = 7; edges[6][1] = 6;
+  edges[7][0] = 6; edges[7][1] = 4;
+
+  edges[8][0] = 7; edges[8][1] = 3;
+  edges[9][0] = 4; edges[9][1] = 0;
+  edges[10][0] = 6; edges[10][1] = 2;
+  edges[11][0] = 5; edges[11][1] = 1;
+
 }
 
 //
@@ -382,6 +399,8 @@ void Model::BuildPlane(Vector3d p0, Vector3d p1, Vector3d p2, Vector3d p3, Vecto
 	Clean();
 
 	Center.set(c);
+	nedges = 4;
+    nplanes = 1;
 
 	v[i++] = AddVertex(p0);
 	v[i++] = AddVertex(p1);
@@ -390,6 +409,12 @@ void Model::BuildPlane(Vector3d p0, Vector3d p1, Vector3d p2, Vector3d p3, Vecto
 
 	AddTriangle(v[0], v[1], v[2]);
 	AddTriangle(v[0], v[2], v[3]);
+
+	edges[0][0] = 0; edges[0][1] = 1;
+	edges[1][0] = 1; edges[1][1] = 2;
+	edges[2][0] = 2; edges[2][1] = 3;
+	edges[3][0] = 3; edges[3][1] = 0;
+
 }
 
 //
@@ -432,9 +457,9 @@ void Model::GetShading(Vector4d color){
     float diffuse_color[4];
     float specular_color[4];
     int shininess;
-    
+
     Vector4d white(1,1,1,1);
-    
+
     for(int i = 0; i < 3; i++){
       ambient_color[i] = .4 * color[i];
       diffuse_color[i] = .2 * white[i];
@@ -456,7 +481,7 @@ void Model::GetShading(Vector4d color){
 void Model::Draw(int wireframe){
   int itri, ivertex;
   int op = (wireframe? GL_LINE_LOOP: GL_POLYGON);
-  
+
   for(itri = 0; itri < ntriangles; itri++){
     glBegin(op);
       if(!wireframe)
@@ -474,9 +499,9 @@ void Model::Draw(int wireframe){
 //
 void Model::Draw(Vector4d color){
   int itri, ivertex;
-  
+
   GetShading(color);
-  
+
   for(itri = 0; itri < ntriangles; itri++){
     glBegin(GL_POLYGON);
 
@@ -550,9 +575,11 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
     for (int i = 0; i < ntriangles; i++)
         normals[i] = (R * normals[i]).normalize();
 
-    for(int i = 0; i < ntriangles; i++)
-        planes[i].set(vertices[triangles[i][0]], (R * normals[i]).normalize());
-
+    int j = 0;
+    for(int i = 0; i < ntriangles; i+=2) {
+        planes[j++].set(vertices[triangles[i][0]], (R * normals[i]));
+        //cout << j << endl;
+    }
     //print();
     ComputeAABB();
     //cout << endl << "left: " << left << "; right: " << right;
@@ -574,9 +601,15 @@ void Model::print() {
     for(int i = 0; i < ntriangles; i++)
         cout << "n[" << i << "]: " << normals[i] << '\n';
     cout << "Planes:" << endl;
-    for(int i = 0; i < ntriangles; i++) {
+    for(int i = 0; i < ntriangles/2; i++) {
         cout << "planes[" << i << "]: ";
         planes[i].print();
+    }
+    cout << "Edges:" << endl;
+
+    for(int i = 0; i < nedges; i++) {
+        cout << "edges[" << i << "][0]: " << vertices[edges[i][0]] << ", ";
+        cout << "edges[" << i << "][1]: " << vertices[edges[i][1]] << endl;
     }
 }
 
@@ -606,7 +639,7 @@ Plane Model::FirstP(bool &done) {
 }
 
 Plane Model::NextP(bool &done) {
-    if(current_plane >= ntriangles - 1) {
+    if(current_plane >= nplanes - 1) {
         done = true;
     } else {
         done =false;
@@ -625,7 +658,7 @@ Plane Model::ThisPlane(Model *other, int which) {
     if(which < ntriangles) {
         thisplane = planes[which];
     } else {
-        n = (other->GetVertex(0) - vertices[which]).normalize();
+        n = (other->GetVertex(0) - vertices[which - 6]).normalize();
         p = vertices[which];
         thisplane.set(p, n);
 
