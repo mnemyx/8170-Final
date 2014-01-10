@@ -81,12 +81,7 @@ void OverlapList::MergeOverlaps(OverlapList &x, OverlapList &y, OverlapList &z){
 
   Clear();
   for(ovl = x.First(done); !done; ovl = x.Next(done)) {
-    if(y.Inlist(ovl.a, ovl.b) || z.Inlist(ovl.a, ovl.b))
-      Insert(ovl.a, ovl.b);
-  }
-
-  for(ovl = y.First(done); !done; ovl = y.Next(done)) {
-    if(z.Inlist(ovl.a, ovl.b) && Inlist(ovl.a, ovl.b))
+    if(y.Inlist(ovl.a, ovl.b) && z.Inlist(ovl.a, ovl.b))
       Insert(ovl.a, ovl.b);
   }
 }

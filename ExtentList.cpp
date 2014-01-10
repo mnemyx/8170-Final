@@ -205,8 +205,9 @@ void ExtentList::print(){
   else
     cout << "z-extents, MaxBodies " << MaxBodies << ", NEntries " << NEntries << '\n';
 
-  for(int i = 0; i < NEntries; i++)
-    extlist[i].print(); cout << " ";
+  for(int i = 0; i < NEntries; i++) {
+     cout << "rbi: " << extlist[i].rb->rbi << endl;
+    cout << "     "; extlist[i].print();}
   cout << '\n';
 
 //  overlaps.print();

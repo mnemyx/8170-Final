@@ -266,8 +266,8 @@ void RBSystem::takeFullStep(double t, double dt) {
             rblist[i].setICs(x, q, p, l);
         //}
     }
-    cout << "full time step: " << endl;
-    printsys();
+    //cout << "full time step: " << endl;
+    //printsys();
 }
 
 void RBSystem::takeTimestep(double t, double dt) {
@@ -292,8 +292,8 @@ void RBSystem::takeTimestep(double t, double dt) {
             //cout << endl;
         //}
     }
-    cout << "before calculations: " << endl;
-    printsys();
+    //cout << "before calculations: " << endl;
+    //printsys();
 }
 
 bool RBSystem::recurseCheck(double dt, StateVector Y, StateVector Ydot, double &fc, int step) {
@@ -320,11 +320,14 @@ bool RBSystem::recurseCheck(double dt, StateVector Y, StateVector Ydot, double &
 
 
     xextents.UpdateExtents();
-    //xextents.print();
+    cout << " -- xextents -- " << endl;
+    xextents.print();
     yextents.UpdateExtents();
-    //yextents.print();
+    cout << " -- yextents -- " << endl;
+    yextents.print();
     zextents.UpdateExtents();
-    //zextents.print();
+    cout << " -- zextents -- " << endl;
+    zextents.print();
 
     alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
     alloverlaps.FindWitnesses();
@@ -369,11 +372,14 @@ bool RBSystem::checkCollisions(double t, double dt) {
     }
 
     xextents.UpdateExtents();
-    //xextents.print();
+    cout << " -- xextents -- " << endl;
+    xextents.print();
     yextents.UpdateExtents();
-    //yextents.print();
+    cout << " -- yextents -- " << endl;
+    yextents.print();
     zextents.UpdateExtents();
-    //zextents.print();
+    cout << " -- zextents -- " << endl;
+    zextents.print();
 
     alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
     alloverlaps.FindWitnesses();
@@ -399,7 +405,7 @@ bool RBSystem::calcImpulse(Contact *collided, double &j, Vector3d &ra, Vector3d 
     rb = collided->p - collided->a->shape->GetCenter();
 
     double vrel = nt0 * (padot - pbdot);
-    double numerator = -(1 + .8) * vrel;
+    double numerator = -(1 + .4) * vrel;
 
     double term1 = collided->a->getMinv();
     double term2 = collided->b->getMinv();

@@ -62,7 +62,7 @@ const float BRIGHT_PALEBLUE[] = {0.5, 0.5, 1, 1};
 
 const int NUMBODIES = 3;
 
-const int TimerDelay = 1; 
+const int TimerDelay = 1;
 
 const double dt = .01;
 static double t;
@@ -164,9 +164,9 @@ void Initialize(char *file){
 //
 void drawScreen(){
   glEnable(GL_DEPTH_TEST);
-  
+
   const float light_position1[] = {1, 1, 1, 1};
-	
+
   // clear the window to the background color
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // solid - clear depth buffer
   // establish shading model, flat or smooth
@@ -190,10 +190,10 @@ void drawScreen(){
   // rotate the model
   glRotatef(ThetaY, 0, 1, 0);       // rotate model about x axis
   glRotatef(ThetaX, 1, 0, 0);       // rotate model about y axis
-  
+
   // draw the rigid bodies
   RBSys->drawSys();
-  
+
   glutSwapBuffers();
 }
 
@@ -236,7 +236,7 @@ void handleTimeStep(int n){
  void InitCamera() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  
+
   glDisable(GL_LIGHTING);
   glDisable(GL_DEPTH_TEST);
 
