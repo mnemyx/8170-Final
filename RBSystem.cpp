@@ -372,21 +372,21 @@ bool RBSystem::checkCollisions(double t, double dt) {
     }
 
     xextents.UpdateExtents();
-    cout << " -- xextents -- " << endl;
-    xextents.print();
+    //cout << " -- xextents -- " << endl;
+    //xextents.print();
     yextents.UpdateExtents();
-    cout << " -- yextents -- " << endl;
-    yextents.print();
+    //cout << " -- yextents -- " << endl;
+    //yextents.print();
     zextents.UpdateExtents();
-    cout << " -- zextents -- " << endl;
-    zextents.print();
+    //cout << " -- zextents -- " << endl;
+    //zextents.print();
 
     alloverlaps.MergeOverlaps(xextents.Overlaps(), yextents.Overlaps(), zextents.Overlaps());
     alloverlaps.FindWitnesses();
     //alloverlaps.print();
 
     allcontacts.ExtractContacts(alloverlaps);
-    allcontacts.print();
+    //allcontacts.print();
     //cout << endl;
     //printsys();
 
@@ -514,6 +514,9 @@ void RBSystem::handleCollisions(double &t, double dt) {
 
 void RBSystem::drawSys(){
     // draw strut/spring
+
+    alloverlaps.draw();
+
     for(int i = 0; i < nbodies; i++)
         rblist[i].drawbody();
 }

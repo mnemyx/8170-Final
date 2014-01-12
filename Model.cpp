@@ -567,17 +567,17 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
     Vector3d dx, dy;
     Vector3d n;
 
-    for (int i = 0; i < nvertices; i++)
-        vertices[i] = x + (R * (vertices[i] - Center));
-
     Center = x;
+
+    for (int i = 0; i < nvertices; i++)
+        vertices[i] = (R * vertices[i]) + Center;
 
     for (int i = 0; i < ntriangles; i++)
         normals[i] = (R * normals[i]).normalize();
 
     int j = 0;
     for(int i = 0; i < ntriangles; i+=2) {
-        planes[j++].set(vertices[triangles[i][0]], (R * normals[i]));
+        planes[j++].set(vertices[triangles[i][0]], normals[i]);
         //cout << j << endl;
     }
     //print();

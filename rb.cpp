@@ -141,7 +141,7 @@ void loadParams(char *file) {
         }
     }
 
-    //  RBSys->printsys();
+    RBSys->printsys();
 
     indata.close();
 }
@@ -205,7 +205,8 @@ void handleTimeStep(int n){
         return;
 
     RBSys->takeTimestep(t, dt);
-    //RBSys->printsys();
+    cout << "before: " << endl;
+    RBSys->printsys();
     drawScreen();
     glutPostRedisplay();		// make sure it gets displayed
 
@@ -216,7 +217,7 @@ void handleTimeStep(int n){
         RBSys->takeFullStep(t, dt);
     }
 
-    //cout << "taking time step" << endl;
+    //cout << "after" << endl;
     //RBSys->printsys(); cout << endl;
 
     t += dt;

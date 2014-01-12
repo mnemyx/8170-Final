@@ -38,7 +38,7 @@ double Plane::distance(const Vector3d &x) const{
 
 int Plane::region(const Vector3d &x, double offset) const{
   double d = distance(x);
-  cout << "offset: " << d << endl;
+  cout << "d: " << d << "; offset + EPS: " << offset + EPS << endl;
   return ((d > offset + EPS)? ABOVE: ((d > offset - EPS)? ON: BELOW));
 }
 
@@ -51,7 +51,7 @@ void Plane::print() const{
 }
 
 void Plane::drawnormal(Vector3d p, Vector3d n){
-  const float NORMSIZE = 0.5;
+  const float NORMSIZE = 5;
   Vector3d endpt;
 
   glColor3f(1, 0, 1);
@@ -65,13 +65,15 @@ void Plane::drawnormal(Vector3d p, Vector3d n){
 
 void Plane::drawplane(Vector3d p, Vector3d n, double length){
   Vector3d u;
-  Vector3d p0, p1;
+  Vector3d p0, p1, p2, p3;
 
   u = n.normalize();
   p0 = p + 0.5 * length * u;
   p1 = p - 0.5 * length * u;
+  p2 = p + 0.5 * length * u;
+  p3 = p - 0.5 * length * u;
 
-  glBegin(GL_LINES);
+  glBegin(GL_LINE);
     glVertex3f(p0.x, p0.y, p0.z);
     glVertex3f(p1.x, p1.y, p1.z);
   glEnd();
@@ -83,6 +85,6 @@ void Plane::draw(double length){
   if(length == 0)
     length = PLANELENGTH;
 
-  drawplane(p, n, length);
+  //drawplane(p, n, length);
   drawnormal(p, n);
 }
