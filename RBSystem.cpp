@@ -260,10 +260,10 @@ void RBSystem::takeFullStep(double t, double dt) {
             //newX.print(); cout << endl;
             XtoState(x, q, p, l, newX, i);
 
-            cout << "x: " << x << endl;
-            cout << "q: " << q << endl;
-            cout << "p: " << p << endl;
-            cout << "l: " << l << endl;
+            //cout << "x: " << x << endl;
+            //cout << "q: " << q << endl;
+            //cout << "p: " << p << endl;
+            //cout << "l: " << l << endl;
             //cout << "takeFullStep: " << endl;
             rblist[i].setICs(x, q, p, l);
             trylist[i] = rblist[i];
@@ -290,6 +290,11 @@ void RBSystem::takeTimestep(double t, double dt) {
 
             XtoState(x, q, p, l, rbSV, i);
             StatetoX(x, q, p, l, Ydot, i);
+
+            //cout << "x: " << x << endl;
+            //cout << "q: " << q << endl;
+            //cout << "p: " << p << endl;
+            //cout << "l: " << l << endl;
 
             //cout << "i: " << i << endl;
             //Ydot.print(); cout << endl;
@@ -436,7 +441,7 @@ void RBSystem::handleCollisions(double &t, double dt) {
     Vector3d dx, x, dp, p, dl, l;
     Vector3d ptang, pnorm;
     double dpt, pt, dxn, d, fc;
-    StateVector Xc, Xnew(nbodies * STATE_SIZE);
+    StateVector Xc, Xnew(nbodies * STATE_SIZE), rbSV;
     Vector3d fj,ra,rb;
     double j;
     bool loopList = false;
@@ -509,6 +514,15 @@ void RBSystem::handleCollisions(double &t, double dt) {
             //}
 
             // finish off timestep...?
+            rbSV = dynamics(Y, t, ((1 - fc) * dt), nbodies, *(collided->a), Env);
+            XtoState(x, q, p, l, rbSV, collided->a->rbi);
+            StatetoX(x, q, p, l, Ydot, collided->a->rbi);
+
+            rbSV = dynamics(Y, t, ((1 - fc) * dt), nbodies, *(collided->b), Env);
+            XtoState(x, q, p, l, rbSV, collided->b->rbi);
+            StatetoX(x, q, p, l, Ydot, collided->b->rbi);
+
+
             Xnew = Euler(Y, Ydot, ((1 - fc) * dt));
 
             XtoState(x, q, p, l, Xnew, collided->a->rbi);
