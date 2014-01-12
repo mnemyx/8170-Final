@@ -39,8 +39,8 @@ protected:
   int triangles[MAXTRIANGLES][3];   // 3 vertex indices for each triangle
   Vector3d normals[MAXTRIANGLES];   // unit normal vector for each triangle
   int ntriangles;		    // count of the number of triangles
-  //Vector3d overtices[MAXVERTICES];       // original vertex coordinates
-  //Vector3d onormals[MAXTRIANGLES];       // original normals for each triangle
+  Vector3d overtices[MAXVERTICES];       // original vertex coordinates
+  Vector3d onormals[MAXTRIANGLES];       // original normals for each triangle
   Plane planes[MAXTRIANGLES/2];             // only meant to be used with planes/cuboids
   int edges[12][2];
   int nedges;

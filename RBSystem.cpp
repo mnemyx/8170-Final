@@ -260,10 +260,10 @@ void RBSystem::takeFullStep(double t, double dt) {
             //newX.print(); cout << endl;
             XtoState(x, q, p, l, newX, i);
 
-            //cout << "x: " << x << endl;
-            //cout << "q: " << q << endl;
-            //cout << "p: " << p << endl;
-            //cout << "l: " << l << endl;
+            cout << "x: " << x << endl;
+            cout << "q: " << q << endl;
+            cout << "p: " << p << endl;
+            cout << "l: " << l << endl;
             //cout << "takeFullStep: " << endl;
             rblist[i].setICs(x, q, p, l);
             trylist[i] = rblist[i];
@@ -279,7 +279,7 @@ void RBSystem::takeTimestep(double t, double dt) {
     StateVector rbSV;
     Quaternion q;
     Vector3d x, p, l;
-    cout << "takeTimeStep" << endl;
+    //cout << "takeTimeStep" << endl;
     for(int i = 0; i < nbodies; i ++) {
         //if (rblist[i].getType() != 1) {
             StatetoX(rblist[i].getX(), rblist[i].getQ(), rblist[i].getP(), rblist[i].getL(), Y, i);

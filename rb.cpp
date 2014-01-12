@@ -137,11 +137,11 @@ void loadParams(char *file) {
             }
 
             RBSys->setParams(m, w, h, d, type, d1, d2, d3, c);
-            RBSys->initializeState(new Vector3d(0,0,0), q, v0, o0);
+            RBSys->initializeState(x0, q, v0, o0);
         }
     }
 
-    ///RBSys->printsys();
+    RBSys->printsys();
 
     indata.close();
 }

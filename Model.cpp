@@ -78,7 +78,7 @@ int Model::AddVertex(const Vector3d &v){
   }
 
   vertices[nvertices] = v;
-  //overtices[nvertices] = v;
+  overtices[nvertices] = v;
 
   return nvertices++;
 }
@@ -110,10 +110,10 @@ int Model::AddTriangle(int v0, int v1, int v2){
   Vector nullv(0,0,0);
   if ((V01 % V02).norm() == 0) {
 	  normals[ntriangles].set(nullv);
-	  //onormals[ntriangles].set(nullv);
+	  onormals[ntriangles].set(nullv);
   } else {
 	normals[ntriangles] = (V01 % V02).normalize();
-	//onormals[ntriangles] = (V01 % V02).normalize();
+	onormals[ntriangles] = (V01 % V02).normalize();
   }
 
   //cout << "normal for triangle: " << ntriangles << " --- ";
@@ -572,12 +572,13 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
 
     for (int i = 0; i < nvertices; i++) {
         //cout << "before vertices[" << i << "]: " << vertices[i] << endl;
-        vertices[i] = (R * vertices[i]) + Center;
+        //cout << "(vertices[i] * R): " << vertices[i] << " * "; R.print(); cout << " = " << (vertices[i] * R) <<endl;
+        vertices[i] = (overtices[i] * R) + Center;
         //cout << "after vertices[" << i << "]: " << vertices[i] << endl;
     }
 
     for (int i = 0; i < ntriangles; i++)
-        normals[i] = (R * normals[i]).normalize();
+        normals[i] = (onormals[i] * R).normalize();
 
     int j = 0;
     for(int i = 0; i < ntriangles; i+=2) {

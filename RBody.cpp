@@ -54,7 +54,7 @@ void RBody::setParams(double m, double width, double height, double depth, int t
     Vector3d p0, p1, p2, p3;
     Vector3d c;
 
-    c.set(d1, d2, d3);
+    c.set(0,0,0);
 
 
     p0.set(-width/2, height/2, -depth/2);
@@ -83,7 +83,7 @@ void RBody::setParams(double m, double width, double height, double depth, int t
 
   } else {
   //cout << "building...cuboid..." << endl;
-    shape->BuildCuboid(width, height, depth, d1, d2, d3);
+    shape->BuildCuboid(width, height, depth, 0,0,0);
     //cout << "m: " << m << endl;
     a_ainv(m, M, Minv);
     //cout << "M: " << M << "; Minv: " << Minv << endl;
@@ -139,11 +139,11 @@ void RBody::ComputeAuxiliaries(){
   Iinv = R * Ibodyinv * R.transpose();
   omega = Iinv * L;
 
-  //cout << "before place in world ";
-  //print();
+  cout << "before place in world ";
+  print();
   shape->place_in_world(X, R);
-  //cout << "after place in world ";
-  //print();
+  cout << "after place in world ";
+  print();
 }
 
 
