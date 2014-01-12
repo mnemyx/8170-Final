@@ -137,11 +137,11 @@ void loadParams(char *file) {
             }
 
             RBSys->setParams(m, w, h, d, type, d1, d2, d3, c);
-            RBSys->initializeState(x0, q, v0, o0);
+            RBSys->initializeState(new Vector3d(0,0,0), q, v0, o0);
         }
     }
 
-    RBSys->printsys();
+    ///RBSys->printsys();
 
     indata.close();
 }
@@ -205,15 +205,19 @@ void handleTimeStep(int n){
         return;
 
     RBSys->takeTimestep(t, dt);
-    cout << "before: " << endl;
-    RBSys->printsys();
+    //cout << "before: " << endl;
+    //RBSys->printsys();
     drawScreen();
     glutPostRedisplay();		// make sure it gets displayed
 
+
+    cout << " ----------- CHECKING COLLISION " << endl;
     if(RBSys->checkCollisions(t, dt)) {
       // time to the event: resting slide-to-stop time fraction, !resting collision
+      cout << " --------- I COLLIDED " << endl;
         RBSys->handleCollisions(t,dt);
     } else {
+        cout << " --------- JK, I DIDNT" << endl;
         RBSys->takeFullStep(t, dt);
     }
 

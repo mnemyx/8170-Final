@@ -143,6 +143,7 @@ void Model::BuildCuboid(float width, float height, float depth, double x, double
   Clean();
   nedges = 12;
   nplanes = 6;
+  Center.set(x,y,z);
 
   // construct the 8 vertices for the cubeoid.
   i = 0;
@@ -150,7 +151,7 @@ void Model::BuildCuboid(float width, float height, float depth, double x, double
     for(jsign = -1; jsign <= 1; jsign += 2)
       for(isign = -1; isign <= 1; isign += 2){
 	vector.set(isign * width / 2, jsign * height / 2, ksign * depth / 2);
-	v[i++] = AddVertex(vector);
+	v[i++] = AddVertex(vector+Center);
       }
 
   // construct the 12 triangles that make the 6 faces
@@ -569,8 +570,11 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
 
     Center = x;
 
-    for (int i = 0; i < nvertices; i++)
+    for (int i = 0; i < nvertices; i++) {
+        //cout << "before vertices[" << i << "]: " << vertices[i] << endl;
         vertices[i] = (R * vertices[i]) + Center;
+        //cout << "after vertices[" << i << "]: " << vertices[i] << endl;
+    }
 
     for (int i = 0; i < ntriangles; i++)
         normals[i] = (R * normals[i]).normalize();
@@ -585,8 +589,6 @@ void Model::place_in_world(const Vector3d &x, const Matrix3x3 &R) {
     //cout << endl << "left: " << left << "; right: " << right;
     //cout << endl << "bottom: " << bottom << "; top: " << top;
     //cout << endl << "zback: " << zback << "; zfront: " << zfront;
-
-
 }
 
 void Model::print() {

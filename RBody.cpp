@@ -139,7 +139,11 @@ void RBody::ComputeAuxiliaries(){
   Iinv = R * Ibodyinv * R.transpose();
   omega = Iinv * L;
 
+  //cout << "before place in world ";
+  //print();
   shape->place_in_world(X, R);
+  //cout << "after place in world ";
+  //print();
 }
 
 
