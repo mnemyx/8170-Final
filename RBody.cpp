@@ -190,11 +190,11 @@ int RBody::checkWitnessPlane(const Plane &witnessplane) const{
 
 
     for(vtx = shape->FirstV(done); !done; vtx = shape->NextV(done)) {
-        //cout << "vtx: " << vtx << endl;
-        //cout << "rbi: " << rbi << "; vcount: " << vcount++ << "; vtx: " << vtx << "; plane: "; witnessplane.print();
+        cout << "vtx: " << vtx << endl;
+        cout << "rbi: " << rbi << "; vcount: " << vcount++ << "; vtx: " << vtx << "; plane: "; witnessplane.print();
         region = witnessplane.region(vtx);
 
-        //cout << "region " << ((region== BELOW)? "BELOW": (region == ON)? "ON": "ABOVE") << endl;
+        cout << "region " << ((region== BELOW)? "BELOW": (region == ON)? "ON": "ABOVE") << endl;
         if(region == BELOW)
             return BELOW;
         else if(region == ON)
@@ -259,7 +259,7 @@ Witness RBody::findWitness(RBody *rb, int swapping){
     // based on notes: search for all faces of a for a witness
     for(idx = 0, witnessplane = rb->shape->FirstP(done); !done;
         idx++, witnessplane = rb->shape->NextP(done)) {
-        //cout << "checking against planes of rbi: " << rb->rbi << "; idx: " << idx << endl;
+        cout << "checking against planes of rbi: " << rb->rbi << "; idx: " << idx << endl;
         region = checkWitnessPlane(witnessplane);
         if(region != BELOW) break;
         // the above meant we found a witness plane in a.
@@ -267,13 +267,13 @@ Witness RBody::findWitness(RBody *rb, int swapping){
 
     if(region == BELOW && !swapping) {
         swapping = 1;
-        //cout << endl <<  endl << "WE COULDNT FIND ANYTHING IN A " << endl;
+        cout << endl <<  endl << "WE COULDNT FIND ANYTHING IN A " << endl;
         witness = rb->findWitness(this, swapping);
         // above says we're swapping....so it's in b
     } else if (region == BELOW && swapping) {
         Vector3d edgen;
         Vector3d edgep;
-        //cout << endl << endl << "WE COULDNT FIND ANYTHING IN A OR B " << endl;
+        cout << endl << endl << "WE COULDNT FIND ANYTHING IN A OR B " << endl;
         for(int i = 0; i < rb->getnedges(); i++) {
             for(int j = 0; j < this->getnedges(); j++) {
                 edgen = (rb->getedge(i) % this->getedge(j)).normalize();

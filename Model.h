@@ -100,6 +100,8 @@ public:
   int GetNedges() { return nedges; }
   Vector3d GetEdge(int indx) { return edges[indx][1] - edges[indx][0]; }
   Vector3d GetEdgeP(int indx) { return edges[indx][0]; }
+  Plane GetPlane(int indx) { return planes[indx]; }
+  int GetNVertices() { return nvertices; }
 
   void place_in_world(const Vector3d &x, const Matrix3x3 &R);
   void print();

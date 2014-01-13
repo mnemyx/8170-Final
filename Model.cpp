@@ -658,12 +658,10 @@ Plane Model::ThisPlane(Model *other, int which) {
     Plane thisplane;
     Vector3d p, n;
 
-    if(which < ntriangles) {
+    if(which < nplanes) {
         thisplane = planes[which];
     } else {
-        n = (other->GetVertex(0) - vertices[which - 6]).normalize();
-        p = vertices[which];
-        thisplane.set(p, n);
+        thisplane = other->GetPlane(which - nplanes);
 
         cout << "thisplane: "; thisplane.print(); cout << endl;
     }
