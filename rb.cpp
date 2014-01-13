@@ -211,13 +211,13 @@ void handleTimeStep(int n){
     glutPostRedisplay();		// make sure it gets displayed
 
 
-    cout << " ----------- CHECKING COLLISION " << endl;
+    //cout << " ----------- CHECKING COLLISION " << endl;
     if(RBSys->checkCollisions(t, dt)) {
       // time to the event: resting slide-to-stop time fraction, !resting collision
-      cout << " --------- I COLLIDED " << endl;
+      //cout << " --------- I COLLIDED " << endl;
         RBSys->handleCollisions(t,dt);
     } else {
-        cout << " --------- JK, I DIDNT" << endl;
+        //cout << " --------- JK, I DIDNT" << endl;
         RBSys->takeFullStep(t, dt);
     }
 

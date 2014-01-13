@@ -79,6 +79,7 @@ class RBSystem{
         void handleCollisions(double& t, double dt);
         bool recurseCheck(double dt, StateVector Y, StateVector Ydot, double &fc, int step);
         bool calcImpulse(Contact *collided, double &j, Vector3d &ra, Vector3d &rb, const Vector3d p);
+        bool colliding(Contact *c, const Vector3d p);
 
         void settryState(const StateVector &Y);
         void acceptState();

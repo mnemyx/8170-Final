@@ -380,8 +380,8 @@ bool RBSystem::checkCollisions(double t, double dt) {
             //cout << "before: " << endl;
             //rblist[i].print();
             rblist[i].setICs(x, q, p, l);
-            cout << "after: " << endl;
-            rblist[i].print();
+            //cout << "after: " << endl;
+            //rblist[i].print();
         //}
     }
 
@@ -423,16 +423,17 @@ bool RBSystem::calcImpulse(Contact *collided, double &j, Vector3d &ra, Vector3d 
     cout << "a->rbi: " << collided->a->rbi << ", b->rbi: " << collided->b->rbi << endl;
 
     /***** based on siggraph notes *******/
-    Vector3d padot = collided->a->dpdt(collided->p);
-    Vector3d pbdot = collided->b->dpdt(collided->p);
+    Vector3d padot = collided->a->dpdt(p);
+    Vector3d pbdot = collided->b->dpdt(p);
     Vector3d nt0 = collided->n;
     ra = p - collided->a->shape->GetCenter();
     rb = p - collided->a->shape->GetCenter();
     cout << "(padot - pbdot): " << (padot - pbdot) << endl;
+    cout << "nt0: " << nt0 << endl;
     double vrel = nt0 * (padot - pbdot);
     cout << "threshold: " << threshold << endl;
     cout << "vrel: " << vrel << endl;
-    double numerator = -(1 + .4) * vrel;
+    double numerator = -1 * (1 + .4) * vrel;
 
     double term1 = collided->a->getMinv();
     double term2 = collided->b->getMinv();
@@ -443,6 +444,20 @@ bool RBSystem::calcImpulse(Contact *collided, double &j, Vector3d &ra, Vector3d 
 
     //if (j < 0) return true;
     //else return false;
+
+    if(vrel > threshold) return false;
+    if(vrel > -1 * threshold) return false;
+    else return true;
+}
+
+bool RBSystem::colliding(Contact *c, const Vector3d p) {
+    double threshold = .5;
+
+    Vector3d padot = c->a->dpdt(p);
+    Vector3d pbdot = c->b->dpdt(p);
+    Vector3d nt0 = c->n;
+
+    double vrel = nt0 * (padot - pbdot);
 
     if(vrel > threshold) return false;
     if(vrel > -threshold) return false;
@@ -483,10 +498,10 @@ void RBSystem::handleCollisions(double &t, double dt) {
             //dp = collided->a->getP();
             //dl = collided->a->getL();
 
-            cout << "x: " << x << ", dx: " << dx << endl;
-            cout << "q: " << q << ", dq: " << dq << endl;
-            cout << "p: " << p << ", dp: " << dp << endl;
-            cout << "l: " << l << ", dl: " << dl << endl;
+            //cout << "x: " << x << ", dx: " << dx << endl;
+            //cout << "q: " << q << ", dq: " << dq << endl;
+            //cout << "p: " << p << ", dp: " << dp << endl;
+            //cout << "l: " << l << ", dl: " << dl << endl;
 
             dpt = dp * (dp - (collided->n * dp) * dp);
             pt = p * (p - (collided->n * p) * p);
@@ -505,15 +520,15 @@ void RBSystem::handleCollisions(double &t, double dt) {
 
             dpxn = (collided->n * (collided->a->getv() + collided->a->getw() % (collided->a->getvertex(abodyp) - x)));
 
-            cout << "nearest: " << nearest << ", dpxn: " << dpxn << endl;
+            //cout << "nearest: " << nearest << ", dpxn: " << dpxn << endl;
             d = ((x) - collided->p) * ((collided->n));
 
             //cout << "pt: " << pt << ", dpt: " << dpt << endl;
-            cout << "d: " << d << ", dxn: " << dxn << endl;
+            //cout << "d: " << d << ", dxn: " << dxn << endl;
 
             //fc = - nearest / dpxn;
             fc = - d / dxn;
-            cout << "time ratio: " << fc << endl;
+            //cout << "time ratio: " << fc << endl;
 
             //recurseCheck(dt, Y, Ydot, fc, 5);
             //cout << "fc: " << fc << endl;
@@ -533,66 +548,72 @@ void RBSystem::handleCollisions(double &t, double dt) {
             //printsys();
             // everything should be up to the collision point now.
 
-            // solve for impulse using variables at the collision point.
-            loopList = calcImpulse(collided, j, ra, rb, collided->a->getvertex(abodyp));
+            //for(int i = 0; i < collided->a->shape->GetNVertices(); i++) {
+               //if(colliding(collided,collided->a->shape->GetVertex(i))) {
+                    // solve for impulse using variables at the collision point.
+                    cout << "collision point: " << collided->a->getvertex(abodyp) << endl;
+                    loopList = calcImpulse(collided, j, ra, rb, collided->a->getvertex(abodyp));
 
-            cout << "j: " << j << endl;
-            fj = j * collided->n;
+                    cout << "j: " << j << endl;
+                    fj = j * collided->n;
 
-            // finish off timestep...?
-            // find a new Ydot for the end of the time step
-            // add impulse to v and w
-            //rbSV = dynamics(Y, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->a), Env);
-            //XtoState(x, q, p, l, rbSV, collided->a->rbi);
-            //StatetoX(x, q, p+fj, l+(ra%fj), Ydot, collided->a->rbi);
+                    // finish off timestep...?
+                    // find a new Ydot for the end of the time step
+                    // add impulse to v and w
+                    //rbSV = dynamics(Y, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->a), Env);
+                    //XtoState(x, q, p, l, rbSV, collided->a->rbi);
+                    //StatetoX(x, q, p+fj, l+(ra%fj), Ydot, collided->a->rbi);
 
-            //rbSV = dynamics(Y, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->b), Env);
-            //XtoState(x, q, p, l, rbSV, collided->b->rbi);
-            //StatetoX(x, q, p-fj, l-(rb%fj), Ydot, collided->b->rbi);
+                    //rbSV = dynamics(Y, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->b), Env);
+                    //XtoState(x, q, p, l, rbSV, collided->b->rbi);
+                    //StatetoX(x, q, p-fj, l-(rb%fj), Ydot, collided->b->rbi);
 
-            //if(collided->a->rbtype != 1) {
-                //XtoState(x, q, p, l, Xc, collided->a->rbi);
-                //collided->a->setICs(collided->a->getX(), collided->a->getQ(), collided->a->getP()+fj, collided->a->getL()+(ra % fj));
-                //trylist[collided->a->rbi].setICs(x, q, (p)+fj, (l)+(ra % fj));
-                StatetoX(collided->a->getX(), collided->a->getQ(), collided->a->getP()+fj, collided->a->getL()+(rb % fj), Xc, collided->a->rbi);
+                    //if(collided->a->rbtype != 1) {
+                        //XtoState(x, q, p, l, Xc, collided->a->rbi);
+                        //collided->a->setICs(collided->a->getX(), collided->a->getQ(), collided->a->getP()+fj, collided->a->getL()+(ra % fj));
+                        //trylist[collided->a->rbi].setICs(x, q, (p)+fj, (l)+(ra % fj));
+                        StatetoX(collided->a->getX(), collided->a->getQ(), collided->a->getP()+fj, collided->a->getL()+(rb % fj), Xc, collided->a->rbi);
+                    //}
+
+                    //if(collided->b->rbtype != 1) {
+                        //XtoState(x, q, p, l, Xc, collided->b->rbi);
+                        //collided->b->setICs(collided->b->getX(), collided->b->getQ(), collided->b->getP()-fj, collided->b->getL()-(rb % fj));
+                        //trylist[collided->b->rbi].setICs(x, q, (p)-fj, (l)-(rb % fj));
+                        StatetoX(collided->b->getX(), collided->b->getQ(), collided->b->getP()-fj, collided->b->getL()-(rb % fj), Xc, collided->b->rbi);
+                    //}
+
+                    rbSV = dynamics(Xc, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->a), Env);
+                    XtoState(x, q, p, l, rbSV, collided->a->rbi);
+                    StatetoX(x, q, p, l, Ydot, collided->a->rbi);
+
+                    rbSV = dynamics(Xc, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->b), Env);
+                    XtoState(x, q, p, l, rbSV, collided->b->rbi);
+                    StatetoX(x, q, p, l, Ydot, collided->b->rbi);
+
+                    //cout << "before finishing time step: " << (1-fc) * dt << endl;
+                    //printsys();
+                    Xnew = Euler(Y, Ydot, ((1 - fc) * dt));
+
+                    XtoState(x, q, p, l, Xnew, collided->a->rbi);
+                    collided->a->setICs(x, q, p, l);
+                    //trylist[collided->a->rbi].setICs(x, q, p, l);
+
+                    XtoState(x, q, p, l, Xnew, collided->b->rbi);
+                    collided->b->setICs(x, q, p, l);
+                    //trylist[collided->b->rbi].setICs(x, q, p, l);
+
+                    //cout << "after collision" << endl;
+                    //Xnew.print();
+                    //printsys();
+                //}
             //}
 
-            //if(collided->b->rbtype != 1) {
-                //XtoState(x, q, p, l, Xc, collided->b->rbi);
-                //collided->b->setICs(collided->b->getX(), collided->b->getQ(), collided->b->getP()-fj, collided->b->getL()-(rb % fj));
-                //trylist[collided->b->rbi].setICs(x, q, (p)-fj, (l)-(rb % fj));
-                StatetoX(collided->b->getX(), collided->b->getQ(), collided->b->getP()-fj, collided->b->getL()-(rb % fj), Xc, collided->b->rbi);
-            //}
-
-            rbSV = dynamics(Xc, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->a), Env);
-            XtoState(x, q, p, l, rbSV, collided->a->rbi);
-            StatetoX(x, q, p, l, Ydot, collided->a->rbi);
-
-            rbSV = dynamics(Xc, t + fc * dt, ((1 - fc) * dt), nbodies, *(collided->b), Env);
-            XtoState(x, q, p, l, rbSV, collided->b->rbi);
-            StatetoX(x, q, p, l, Ydot, collided->b->rbi);
-
-            //cout << "before finishing time step: " << (1-fc) * dt << endl;
-            //printsys();
-            Xnew = Euler(Y, Ydot, ((1 - fc) * dt));
-
-            XtoState(x, q, p, l, Xnew, collided->a->rbi);
-            collided->a->setICs(x, q, p, l);
-            //trylist[collided->a->rbi].setICs(x, q, p, l);
-
-            XtoState(x, q, p, l, Xnew, collided->b->rbi);
-            collided->b->setICs(x, q, p, l);
-            //trylist[collided->b->rbi].setICs(x, q, p, l);
-
-            //cout << "after collision" << endl;
-            //Xnew.print();
-            //printsys();
 
             collided = allcontacts.Next();
         }
-    //}while(loopList);
+    //}while(checkCollisions(t, dt));
 
-    //allcontacts.Clear();
+    allcontacts.Clear();
 }
 
 void RBSystem::drawSys(){

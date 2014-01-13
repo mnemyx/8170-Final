@@ -299,10 +299,12 @@ Plane RBody::getPlane(RBody *other, int which){
 }
 
 Vector3d RBody::r(const Vector3d &p){
+  //cout << "p - X: " << p << " - " << X << " = " << p-X << endl;
   return p - X;
 }
 
 Vector3d RBody::dpdt(const Vector3d &p){
+  //cout << "v + (omega % r(" << p << "): " << v << " + (" << omega << " % " << r(p) << ") = " << v + (omega % r(p)) << endl;
   return v + (omega % r(p));
 }
 
